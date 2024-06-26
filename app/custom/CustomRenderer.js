@@ -1,68 +1,65 @@
 import BaseRenderer from 'diagram-js/lib/draw/BaseRenderer';
-
 import {
   append as svgAppend,
   attr as svgAttr,
-  classes as svgClasses,
   create as svgCreate
 } from 'tiny-svg';
-
-import {
-  getRoundRectPath
-} from 'bpmn-js/lib/draw/BpmnRenderUtil';
-
-import {
-  is,
-  getBusinessObject
-} from 'bpmn-js/lib/util/ModelUtil';
-
-import { isNil } from 'min-dash';
+import { getRoundRectPath } from 'bpmn-js/lib/draw/BpmnRenderUtil';
+import { is, getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
 
 const HIGH_PRIORITY = 1500,
       TASK_BORDER_RADIUS = 2,
-      COLOR_GREEN = '#52B415',
-      COLOR_YELLOW = '#ffc800',
-      COLOR_RED = '#cc0000';
-
+      COLOR_MAP = {
+        'Total energy': '#52B415',
+        'Renewable energy': '#ffc800',
+        'Non-Renewable energy': '#cc0000',
+        'Indoor energy': '#8a2be2',
+        'Transportation energy': '#ff6347',
+        'Total waste': '#6b8e23',
+        'Recyclable waste': '#3cb371',
+        'Non-Recyclable waste': '#d2691e',
+        'Hazardous waste': '#ff4500',
+        'Total water withdrawal': '#4682b4',
+        'Water Non-consumptive use': '#5f9ea0',
+        'Water Use': '#00ced1',
+        'Water Pollution': '#1e90ff',
+        'Total emissions to air': '#2e8b57',
+        'GHGs emissions': '#32cd32',
+        'CO2 emissions': '#9acd32',
+        'NOx and SOx emissions': '#adff2f'
+      };
 
 export default class CustomRenderer extends BaseRenderer {
   constructor(eventBus, bpmnRenderer) {
     super(eventBus, HIGH_PRIORITY);
-
     this.bpmnRenderer = bpmnRenderer;
   }
 
   canRender(element) {
-
     // ignore labels
     return !element.labelTarget;
   }
 
   drawShape(parentNode, element) {
     const shape = this.bpmnRenderer.drawShape(parentNode, element);
+    const businessObject = getBusinessObject(element);
+    const kei = businessObject.kei;
 
-    const suitabilityScore = this.getSuitabilityScore(element);
-
-    if (!isNil(suitabilityScore)) {
-      const color = this.getColor(suitabilityScore);
-
-      const rect = drawRect(parentNode, 50, 20, TASK_BORDER_RADIUS, color);
+    if (kei) {
+      const color = this.getColor(kei);
+      const rect = drawRect(parentNode, 150, 20, TASK_BORDER_RADIUS, color);
 
       svgAttr(rect, {
-        transform: 'translate(-20, -10)'
+        transform: 'translate(-70, -10)'
       });
 
-      var text = svgCreate('text');
-
+      const text = svgCreate('text');
       svgAttr(text, {
         fill: '#fff',
-        transform: 'translate(-15, 5)'
+        transform: 'translate(-65, 5)'
       });
 
-      svgClasses(text).add('djs-label');
-
-      svgAppend(text, document.createTextNode(suitabilityScore));
-
+      svgAppend(text, document.createTextNode(kei));
       svgAppend(parentNode, text);
     }
 
@@ -73,34 +70,16 @@ export default class CustomRenderer extends BaseRenderer {
     if (is(shape, 'bpmn:Task')) {
       return getRoundRectPath(shape, TASK_BORDER_RADIUS);
     }
-
     return this.bpmnRenderer.getShapePath(shape);
   }
 
-  getSuitabilityScore(element) {
-    const businessObject = getBusinessObject(element);
-
-    const { suitable } = businessObject;
-
-    return Number.isFinite(suitable) ? suitable : null;
-  }
-
-  getColor(suitabilityScore) {
-    if (suitabilityScore > 75) {
-      return COLOR_GREEN;
-    } else if (suitabilityScore > 25) {
-      return COLOR_YELLOW;
-    }
-
-    return COLOR_RED;
+  getColor(kei) {
+    return COLOR_MAP[kei] || '#000';
   }
 }
 
 CustomRenderer.$inject = [ 'eventBus', 'bpmnRenderer' ];
 
-// helpers //////////
-
-// copied from https://github.com/bpmn-io/bpmn-js/blob/master/lib/draw/BpmnRenderer.js
 function drawRect(parentNode, width, height, borderRadius, color) {
   const rect = svgCreate('rect');
 
@@ -115,6 +94,5 @@ function drawRect(parentNode, width, height, borderRadius, color) {
   });
 
   svgAppend(parentNode, rect);
-
   return rect;
 }

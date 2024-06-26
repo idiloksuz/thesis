@@ -1,5 +1,8 @@
 import BpmnModeler from 'bpmn-js/lib/Modeler';
 import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
+import CustomPalette from '/Users/idiloksuz/Desktop/bp/app/custom/CustomPalette.js';
+import CustomContextPad from '/Users/idiloksuz/Desktop/bp/app/custom/CustomContextPad.js';
+import CustomRenderer from '/Users/idiloksuz/Desktop/bp/app/custom/CustomRenderer.js';
 import diagramXML from '../resources/diagram.bpmn';
 import customModule from './custom';
 import qaExtension from '../resources/qa';
@@ -8,164 +11,194 @@ import { saveAs } from 'file-saver';
 const HIGH_PRIORITY = 1500;
 
 document.addEventListener('DOMContentLoaded', () => {
-  const containerEl = document.getElementById('container'),
-        qualityAssuranceEl = document.getElementById('quality-assurance'),
-        suitabilityScoreEl = document.getElementById('suitability-score'),
-        lastCheckedEl = document.getElementById('last-checked'),
-        okayEl = document.getElementById('okay'),
-        formEl = document.getElementById('form'),
-        warningEl = document.getElementById('warning'),
-        saveButtonEl = document.getElementById('save-button');
+  const containerEl = document.getElementById('container');
+  const formEl = document.getElementById('form');
+  const qualityAssuranceEl = document.getElementById('quality-assurance');
+  const keisEl = document.getElementById('keis');
+  const lastCheckedEl = document.getElementById('last-checked');
+  const okayEl = document.getElementById('okay');
+  const warningEl = document.getElementById('warning');
+  const saveButtonEl = document.getElementById('save-button');
+  let currentElement, businessObject;
 
-  const fileName = 'diagram.bpmn';
+  const keis = [
+    "Total energy",
+    "Renewable energy",
+    "Non-Renewable energy",
+    "Indoor energy",
+    "Transportation energy",
+    "Total waste",
+    "Recyclable waste",
+    "Non-Recyclable waste",
+    "Hazardous waste",
+    "Total water withdrawal",
+    "Water Non-consumptive use",
+    "Water Use",
+    "Water Pollution",
+    "Total emissions to air",
+    "GHGs emissions",
+    "CO2 emissions",
+    "NOx and SOx emissions"
+  ];
 
-  // hide quality assurance if user clicks outside
+  // Populate KEIs dropdown
+  keis.forEach(kei => {
+    const option = document.createElement('option');
+    option.value = kei;
+    option.textContent = kei;
+    keisEl.appendChild(option);
+  });
+
+  // Hide quality assurance if user clicks outside
   window.addEventListener('click', (event) => {
     const { target } = event;
-
     if (target === qualityAssuranceEl || qualityAssuranceEl.contains(target)) {
       return;
     }
-
     qualityAssuranceEl.classList.add('hidden');
   });
 
-  // create modeler
+  // Validation function
+  function validate() {
+    const value = keisEl.value;
+    if (!value) {
+      warningEl.classList.remove('hidden');
+      okayEl.disabled = true;
+    } else {
+      warningEl.classList.add('hidden');
+      okayEl.disabled = false;
+    }
+  }
+
+  keisEl.addEventListener('input', validate);
   const bpmnModeler = new BpmnModeler({
-    container: containerEl,
+    container: '#container',
     additionalModules: [
-      customModule
+      customModule,
+      {
+        __init__: ['customPalette', 'customContextPad', 'customRenderer'],
+        customPalette: ['type', CustomPalette],
+        customContextPad: ['type', CustomContextPad],
+        customRenderer: ['type', CustomRenderer]
+      }
     ],
     moddleExtensions: {
       qa: qaExtension
     }
   });
+  
+  bpmnModeler.importXML(diagramXML, (err) => {
+    if (err) {
+      console.error('Failed to import diagram', err);
+    } else {
+      console.log('Diagram imported successfully');
+      // Set bpmnModeler to CustomContextPad instance
+      const customContextPad = bpmnModeler.get('customContextPad');
+      customContextPad.setBpmnModeler(bpmnModeler);
+    }
+  });
+  
+  document.getElementById('save-button').addEventListener('click', (e) => {
+    e.preventDefault();
+    bpmnModeler.saveXML({ format: true }).then(result => {
+      const blob = new Blob([result.xml], { type: 'application/xml' });
+      saveAs(blob, 'diagram.bpmn');
+    }).catch(err => console.error(err));
+  });
+  // Open quality assurance if user right clicks on element
+  bpmnModeler.on('element.contextmenu', HIGH_PRIORITY, (event) => {
+    event.originalEvent.preventDefault();
+    event.originalEvent.stopPropagation();
 
-  // import XML
-  bpmnModeler.importXML(diagramXML).then(() => {
+    qualityAssuranceEl.classList.remove('hidden');
 
-    const moddle = bpmnModeler.get('moddle'),
-          modeling = bpmnModeler.get('modeling');
+    currentElement = event.element;
 
-    let analysisDetails,
-        businessObject,
-        element,
-        suitabilityScore;
-
-    function saveDiagram() {
-      return bpmnModeler.saveXML({ format: true });
+    // Ignore root element
+    if (!currentElement.parent) {
+      return;
     }
 
-    function downloadDiagram(e) {
-      e.preventDefault();
+    businessObject = getBusinessObject(currentElement);
+    const selectedKEI = businessObject.kei || '';
 
-      saveDiagram().then(
-        (result) => {
-          const blob = new Blob([result.xml], { type: 'application/xml' });
-          saveAs(blob, fileName);
-          setDirty(false);
-        }
-      ).catch(
-        (err) => console.error(err)
-      );
+    keisEl.value = selectedKEI;
+    keisEl.focus();
+
+    const analysisDetails = getExtensionElement(businessObject, 'qa:AnalysisDetails');
+    lastCheckedEl.textContent = analysisDetails ? analysisDetails.lastChecked : '-';
+
+    validate();
+  });
+
+  // Set KEI and last checked if user submits
+  formEl.addEventListener('submit', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!businessObject) {
+      console.error('No businessObject found');
+      return;
     }
 
-    // validate suitability score
-    function validate() {
-      const { value } = suitabilityScoreEl;
+    const selectedKEI = keisEl.value;
+    const moddle = bpmnModeler.get('moddle');
+    let extensionElements = businessObject.extensionElements;
 
-      if (isNaN(value)) {
-        warningEl.classList.remove('hidden');
-        okayEl.disabled = true;
-      } else {
-        warningEl.classList.add('hidden');
-        okayEl.disabled = false;
-      }
+    if (!extensionElements) {
+      extensionElements = moddle.create('bpmn:ExtensionElements');
+      businessObject.extensionElements = extensionElements;
     }
 
-    // open quality assurance if user right clicks on element
-    bpmnModeler.on('element.contextmenu', HIGH_PRIORITY, (event) => {
-      event.originalEvent.preventDefault();
-      event.originalEvent.stopPropagation();
+    let analysisDetails = getExtensionElement(businessObject, 'qa:AnalysisDetails');
 
-      qualityAssuranceEl.classList.remove('hidden');
+    if (!analysisDetails) {
+      analysisDetails = moddle.create('qa:AnalysisDetails');
+      extensionElements.get('values').push(analysisDetails);
+    }
 
-      ({ element } = event);
+    analysisDetails.lastChecked = new Date().toISOString();
 
-      // ignore root element
-      if (!element.parent) {
-        return;
-      }
-
-      businessObject = getBusinessObject(element);
-
-      let { suitable } = businessObject;
-
-      suitabilityScoreEl.value = suitable ? suitable : '';
-
-      suitabilityScoreEl.focus();
-
-      analysisDetails = getExtensionElement(businessObject, 'qa:AnalysisDetails');
-
-      lastCheckedEl.textContent = analysisDetails ? analysisDetails.lastChecked : '-';
-
-      validate();
+    bpmnModeler.get('modeling').updateProperties(currentElement, {
+      extensionElements: businessObject.extensionElements,
+      kei: selectedKEI
     });
 
-    // set suitability core and last checked if user submits
-    formEl.addEventListener('submit', (event) => {
-      event.preventDefault();
-      event.stopPropagation();
+    // Force a refresh of the element's visual representation
+    const updatedElement = bpmnModeler.get('elementRegistry').get(currentElement.id);
+    bpmnModeler.get('graphicsFactory').update('shape', updatedElement);
 
-      suitabilityScore = Number(suitabilityScoreEl.value);
+    qualityAssuranceEl.classList.add('hidden');
+  });
 
-      if (isNaN(suitabilityScore)) {
-        return;
-      }
+  // Save button click event
+ 
+  
+saveButtonEl.addEventListener('click', (e) => {
+  e.preventDefault();
+  bpmnModeler.saveXML({ format: true }).then(result => {
+    const blob = new Blob([result.xml], { type: 'application/xml' });
+    saveAs(blob, 'diagram.bpmn');
+  }).catch(err => console.error(err));
+});
 
-      const extensionElements = businessObject.extensionElements || moddle.create('bpmn:ExtensionElements');
-
-      if (!analysisDetails) {
-        analysisDetails = moddle.create('qa:AnalysisDetails');
-
-        extensionElements.get('values').push(analysisDetails);
-      }
-
-      analysisDetails.lastChecked
-      analysisDetails.lastChecked = new Date().toISOString();
-
-      modeling.updateProperties(element, {
-        extensionElements,
-        suitable: suitabilityScore
-      });
-
+  // Close quality assurance if user presses escape
+  formEl.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
       qualityAssuranceEl.classList.add('hidden');
-    });
-
-    // close quality assurance if user presses escape
-    formEl.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') {
-        qualityAssuranceEl.classList.add('hidden');
-      }
-    });
-
-    // validate suitability score if user inputs value
-    suitabilityScoreEl.addEventListener('input', validate);
-
-    // Save button click event
-    saveButtonEl.addEventListener('click', downloadDiagram);
-
-  }).catch((err) => {
-    console.error(err);
+    }
   });
 
   function getExtensionElement(element, type) {
     if (!element.extensionElements) {
       return;
     }
-
-    return element.extensionElements.values.filter((extensionElement) => {
+    return element.extensionElements.values.filter(extensionElement => {
       return extensionElement.$instanceOf(type);
     })[0];
+  }
+
+  function getBusinessObject(element) {
+    return element.businessObject || element;
   }
 });

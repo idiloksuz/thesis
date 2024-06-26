@@ -20,6 +20,28 @@
       ]
     },
     {
+      "name": "Task",
+      "superClass": [ "bpmn:Task" ],
+      "properties": [
+        {
+          "name": "kei",
+          "isAttr": true,
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "Kei",  
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "value",
+          "isAttr": true,
+          "type": "String"
+        }
+      ]
+    },
+    {
       "name": "AnalysisDetails",
       "superClass": [ "Element" ],
       "properties": [
@@ -56,6 +78,6 @@
       ]
     }
   ],
-  "emumerations": [],
+  "enumerations": [],
   "associations": []
 }

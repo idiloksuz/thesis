@@ -1,6 +1,22 @@
-const SUITABILITY_SCORE_HIGH = 100,
-      SUITABILITY_SCORE_AVERGE = 50,
-      SUITABILITY_SCORE_LOW = 25;
+const KEIS = {
+  ENERGY: 'Total energy',
+  RENEWABLE_ENERGY: 'Renewable energy',
+  NON_RENEWABLE_ENERGY: 'Non-Renewable energy',
+  INDOOR_ENERGY: 'Indoor energy',
+  TRANSPORTATION_ENERGY: 'Transportation energy',
+  TOTAL_WASTE: 'Total waste',
+  RECYCLABLE_WASTE: 'Recyclable waste',
+  NON_RECYCLABLE_WASTE: 'Non-Recyclable waste',
+  HAZARDOUS_WASTE: 'Hazardous waste',
+  TOTAL_WATER_WITHDRAWAL: 'Total water withdrawal',
+  WATER_NON_CONSUMPTIVE_USE: 'Water Non-consumptive use',
+  WATER_USE: 'Water Use',
+  WATER_POLLUTION: 'Water Pollution',
+  TOTAL_EMISSIONS_TO_AIR: 'Total emissions to air',
+  GHG_EMISSIONS: 'GHGs emissions',
+  CO2_EMISSIONS: 'CO2 emissions',
+  NOX_SOX_EMISSIONS: 'NOx and SOx emissions'
+};
 
 export default class CustomPalette {
   constructor(bpmnFactory, create, elementFactory, palette, translate) {
@@ -20,11 +36,10 @@ export default class CustomPalette {
       translate
     } = this;
 
-    function createTask(suitabilityScore) {
+    function createTask(kei) {
       return function(event) {
         const businessObject = bpmnFactory.create('bpmn:Task');
-
-        businessObject.suitable = suitabilityScore;
+        businessObject.kei = kei;
 
         const shape = elementFactory.createShape({
           type: 'bpmn:Task',
@@ -35,35 +50,18 @@ export default class CustomPalette {
       };
     }
 
-    return {
-      'create.low-task': {
+    return Object.keys(KEIS).reduce((entries, key) => {
+      entries[`create.${key.toLowerCase().replace(/_/g, '-')}-task`] = {
         group: 'activity',
-        className: 'bpmn-icon-task red',
-        title: translate('Create Task with low suitability score'),
+        className: `bpmn-icon-task ${key.toLowerCase()}`,
+        title: translate(`Create Task with ${KEIS[key]} KEI`),
         action: {
-          dragstart: createTask(SUITABILITY_SCORE_LOW),
-          click: createTask(SUITABILITY_SCORE_LOW)
+          dragstart: createTask(KEIS[key]),
+          click: createTask(KEIS[key])
         }
-      },
-      'create.average-task': {
-        group: 'activity',
-        className: 'bpmn-icon-task yellow',
-        title: translate('Create Task with average suitability score'),
-        action: {
-          dragstart: createTask(SUITABILITY_SCORE_AVERGE),
-          click: createTask(SUITABILITY_SCORE_AVERGE)
-        }
-      },
-      'create.high-task': {
-        group: 'activity',
-        className: 'bpmn-icon-task green',
-        title: translate('Create Task with high suitability score'),
-        action: {
-          dragstart: createTask(SUITABILITY_SCORE_HIGH),
-          click: createTask(SUITABILITY_SCORE_HIGH)
-        }
-      }
-    };
+      };
+      return entries;
+    }, {});
   }
 }
 

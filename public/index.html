@@ -2,44 +2,26 @@
 <html>
 <head>
   <title>bpmn-js-example-model-extension</title>
-
   <meta charset="utf-8"/>
-
   <link rel="stylesheet" href="vendor/bpmn-js/assets/diagram-js.css" />
   <link rel="stylesheet" href="vendor/bpmn-js/assets/bpmn-font/css/bpmn-embedded.css" />
   <link rel="stylesheet" href="css/app.css" />
 </head>
 <body>
-  <div id="container">><button id="save-button">Save Diagram</button></div>
-
-  <div id="quality-assurance" class="panel hidden">
-    <form id="form">
-      <p>
-        <b>Suitability Score</b>
-      </p>
-      <br />
-      <input id="suitability-score" type="text" placeholder="100" autocomplete="off">
-      <br />
-      <br />
-      <p id="warning" class="hidden">
-        Suitability Score must be a number
-      </p>
-      <br />
-      <p>
-        <b>Last Checked</b>
-      </p>
-      <br />
-      <p id="last-checked">
-        -
-      </p>
-      <br />
-      <input id="okay" type="submit" value="Okay">
-    </form>
+  <div id="container">
+    <button id="save-button">Save Diagram</button>
   </div>
-
+  <div id="quality-assurance" class="hidden">
+    <form id="form">
+      <label for="keis">Key Environmental Indicator:</label>
+      <select id="keis"></select>
+      <p id="last-checked">Last checked: -</p>
+      <button id="okay" type="submit">Okay</button>
+    </form>
+    <p id="warning" class="hidden">Invalid input</p>
+  </div>
   <div id="hint" class="panel">Click <b>right mouse button</b> to edit properties.</div>
-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-
   <script src="app.js"></script>
+</body>
 </html>
