@@ -10,23 +10,11 @@ import { is, getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
 const HIGH_PRIORITY = 1500,
       TASK_BORDER_RADIUS = 2,
       COLOR_MAP = {
-        'Total energy': '#52B415',
-        'Renewable energy': '#ffc800',
-        'Non-Renewable energy': '#cc0000',
-        'Indoor energy': '#8a2be2',
-        'Transportation energy': '#ff6347',
-        'Total waste': '#6b8e23',
-        'Recyclable waste': '#3cb371',
-        'Non-Recyclable waste': '#d2691e',
-        'Hazardous waste': '#ff4500',
-        'Total water withdrawal': '#4682b4',
-        'Water Non-consumptive use': '#5f9ea0',
-        'Water Use': '#00ced1',
-        'Water Pollution': '#1e90ff',
-        'Total emissions to air': '#2e8b57',
-        'GHGs emissions': '#32cd32',
-        'CO2 emissions': '#9acd32',
-        'NOx and SOx emissions': '#adff2f'
+        'Energy consumption': '#52B415',
+        'Carbon-dioxide emissions': '#ffc800',
+        'Water usage': '#cc0000',
+        'Waste generation': '#8a2be2',
+        'Resource efficiency': '#ff6347',
       };
 
 export default class CustomRenderer extends BaseRenderer {
@@ -36,30 +24,30 @@ export default class CustomRenderer extends BaseRenderer {
   }
 
   canRender(element) {
-    // ignore labels
-    return !element.labelTarget;
+    return is(element, 'bpmn:Task') && element.businessObject.kei === 'Energy consumption';
   }
 
   drawShape(parentNode, element) {
     const shape = this.bpmnRenderer.drawShape(parentNode, element);
-    const businessObject = getBusinessObject(element);
-    const kei = businessObject.kei;
 
-    if (kei) {
-      const color = this.getColor(kei);
-      const rect = drawRect(parentNode, 150, 20, TASK_BORDER_RADIUS, color);
+    if (element.businessObject.kei === 'Energy consumption') {
+      const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+      img.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', '/Users/idiloksuz/Desktop/bp/public/energyConsumption.jpg'); // Adjust the path to your image
+      img.setAttributeNS(null, 'x', element.width - 24);
+      img.setAttributeNS(null, 'y', 0);
+      img.setAttributeNS(null, 'width', 24);
+      img.setAttributeNS(null, 'height', 24);
+      parentNode.appendChild(img);
 
-      svgAttr(rect, {
-        transform: 'translate(-70, -10)'
-      });
-
+      // Add kWh text
       const text = svgCreate('text');
       svgAttr(text, {
-        fill: '#fff',
-        transform: 'translate(-65, 5)'
+        x: element.width - 24,
+        y: 20,
+        'font-size': '12px',
+        fill: 'black'
       });
-
-      svgAppend(text, document.createTextNode(kei));
+      text.textContent = `${element.businessObject.energyConsumption} kWh`;
       svgAppend(parentNode, text);
     }
 
@@ -78,7 +66,7 @@ export default class CustomRenderer extends BaseRenderer {
   }
 }
 
-CustomRenderer.$inject = [ 'eventBus', 'bpmnRenderer' ];
+CustomRenderer.$inject = ['eventBus', 'bpmnRenderer'];
 
 function drawRect(parentNode, width, height, borderRadius, color) {
   const rect = svgCreate('rect');

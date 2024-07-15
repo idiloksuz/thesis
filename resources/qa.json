@@ -21,7 +21,7 @@
     },
     {
       "name": "Task",
-      "superClass": [ "bpmn:Task" ],
+      "superClass": ["bpmn:Task"],
       "properties": [
         {
           "name": "kei",
@@ -31,8 +31,8 @@
       ]
     },
     {
-      "name": "Kei",  
-      "superClass": [ "Element" ],
+      "name": "Kei",
+      "superClass": ["Element"],
       "properties": [
         {
           "name": "value",
@@ -42,8 +42,24 @@
       ]
     },
     {
+      "name": "EnergyConsumption",
+      "superClass": ["Element"],
+      "properties": [
+        {
+          "name": "value",
+          "isAttr": true,
+          "type": "String"
+        },
+        {
+          "name": "unit",
+          "isAttr": true,
+          "type": "String"
+        }
+      ]
+    },
+    {
       "name": "AnalysisDetails",
-      "superClass": [ "Element" ],
+      "superClass": ["Element"],
       "properties": [
         {
           "name": "lastChecked",

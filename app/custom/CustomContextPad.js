@@ -3,23 +3,11 @@ import { is } from 'bpmn-js/lib/util/ModelUtil';
 
 const HIGH_PRIORITY = 1500;
 const KEIS = [
-  "Total energy",
-  "Renewable energy",
-  "Non-Renewable energy",
-  "Indoor energy",
-  "Transportation energy",
-  "Total waste",
-  "Recyclable waste",
-  "Non-Recyclable waste",
-  "Hazardous waste",
-  "Total water withdrawal",
-  "Water Non-consumptive use",
-  "Water Use",
-  "Water Pollution",
-  "Total emissions to air",
-  "GHGs emissions",
-  "CO2 emissions",
-  "NOx and SOx emissions"
+  "Energy consumption",
+  "Carbon-dioxide emissions",
+  "Water usage",
+  "Waste generation",
+  "Resource efficiency"
 ];
 
 export default class CustomContextPad {
@@ -60,6 +48,12 @@ export default class CustomContextPad {
         const businessObject = bpmnFactory.create('bpmn:Task');
         businessObject.kei = kei;
 
+        if (kei === 'Energy consumption') {
+          const kwh = prompt('Enter the number of kWh:');
+          businessObject.energyConsumption = kwh;
+          // updateTaskLabel(businessObject, kei, kwh);
+        }
+
         const shape = elementFactory.createShape({
           type: 'bpmn:Task',
           businessObject: businessObject
@@ -70,11 +64,13 @@ export default class CustomContextPad {
         } else {
           create.start(event, shape, element);
         }
+
+        ensureKEIExtensionElement(businessObject, kei, bpmnModeler);
+        eventBus.fire('element.changed', { element: shape });
       };
     }
 
     function editTaskKEI(event, element) {
-      console.log("Edit KEI clicked", event);
       const businessObject = element.businessObject;
       const menu = document.createElement('div');
       menu.className = 'custom-kei-menu';
@@ -84,34 +80,24 @@ export default class CustomContextPad {
         menuItem.className = 'custom-kei-menu-item';
         menuItem.innerText = kei;
         menuItem.addEventListener('click', () => {
-          console.log("KEI selected:", kei);
           businessObject.kei = kei;
-
-          // Ensure the KEI is serialized in the XML
-          const moddle = bpmnModeler.get('moddle');
-          const extensionElements = businessObject.extensionElements || moddle.create('bpmn:ExtensionElements');
-          businessObject.extensionElements = extensionElements;
-
-          const keiElement = moddle.create('qa:Kei', { value: kei });
-          if (!extensionElements.get('values').includes(keiElement)) {
-            extensionElements.get('values').push(keiElement);
+          if (kei === 'Energy consumption') {
+            const kwh = prompt('Enter the number of kWh:');
+            businessObject.energyConsumption = kwh;
+            // updateTaskLabel(businessObject, kei, kwh);
           }
-
+          ensureKEIExtensionElement(businessObject, kei, bpmnModeler);
           eventBus.fire('element.changed', { element });
           document.body.removeChild(menu);
         });
         menu.appendChild(menuItem);
       });
 
-      console.log('Appending menu to body:', menu);
       document.body.appendChild(menu);
-
       const { clientX, clientY } = event.originalEvent || event;
       menu.style.position = 'absolute';
       menu.style.left = `${clientX}px`;
       menu.style.top = `${clientY}px`;
-
-      console.log('Menu positioned at:', menu.style.cssText);
 
       setTimeout(() => {
         document.addEventListener('click', (e) => {
@@ -140,7 +126,6 @@ export default class CustomContextPad {
       title: translate('Edit KEI'),
       action: {
         click: (event, element) => {
-          console.log("edit.kei-task action triggered");
           editTaskKEI(event, element);
         }
       }
@@ -160,3 +145,33 @@ CustomContextPad.$inject = [
   'translate',
   'eventBus'
 ];
+
+function ensureKEIExtensionElement(businessObject, kei, bpmnModeler) {
+  const moddle = bpmnModeler.get('moddle');
+  const extensionElements = businessObject.extensionElements || moddle.create('bpmn:ExtensionElements');
+  businessObject.extensionElements = extensionElements;
+
+  let keiElement = extensionElements.get('values').find(el => el.$type === 'qa:Kei');
+  if (!keiElement) {
+    keiElement = moddle.create('qa:Kei', { value: kei });
+    extensionElements.get('values').push(keiElement);
+  } else {
+    keiElement.value = kei;
+  }
+
+  if (kei === 'Energy consumption') {
+    let energyConsumptionElement = extensionElements.get('values').find(el => el.$type === 'qa:EnergyConsumption');
+    if (!energyConsumptionElement) {
+      energyConsumptionElement = moddle.create('qa:EnergyConsumption', { value: businessObject.energyConsumption, unit: 'kWh' });
+      extensionElements.get('values').push(energyConsumptionElement);
+    } else {
+      energyConsumptionElement.value = businessObject.energyConsumption;
+    }
+  }
+}
+
+function updateTaskLabel(businessObject, kei, value) {
+  if (kei === 'Energy consumption') {
+    businessObject.name = `Energy consumption: ${value} kWh`;
+  }
+}

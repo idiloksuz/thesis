@@ -22,23 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentElement, businessObject;
 
   const keis = [
-    "Total energy",
-    "Renewable energy",
-    "Non-Renewable energy",
-    "Indoor energy",
-    "Transportation energy",
-    "Total waste",
-    "Recyclable waste",
-    "Non-Recyclable waste",
-    "Hazardous waste",
-    "Total water withdrawal",
-    "Water Non-consumptive use",
-    "Water Use",
-    "Water Pollution",
-    "Total emissions to air",
-    "GHGs emissions",
-    "CO2 emissions",
-    "NOx and SOx emissions"
+    "Energy consumption",
+    "Carbon-dioxide emissions",
+    "Water usage",
+    "Waste generation",
+    "Resource efficiency"
   ];
 
   // Populate KEIs dropdown
@@ -46,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const option = document.createElement('option');
     option.value = kei;
     option.textContent = kei;
-    keisEl.appendChild(option);
   });
 
   // Hide quality assurance if user clicks outside
