@@ -37,7 +37,7 @@ The XML of such an element looks something like this:
 <bpmn2:task id="Task_1" name="Examine Situation" qa:suitable="70">
   <bpmn2:outgoing>SequenceFlow_1</bpmn2:outgoing>
   <bpmn2:extensionElements>
-    <qa:analysisDetails lastChecked="2015-01-20" nextCheck="2015-07-15">
+    <qa:tails lastChecked="2015-01-20" nextCheck="2015-07-15">
       <qa:comment author="Klaus">
         Our operators always have a hard time to figure out, what they need to do here.
       </qa:comment>

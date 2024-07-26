@@ -11,10 +11,9 @@ const HIGH_PRIORITY = 1500,
       TASK_BORDER_RADIUS = 2,
       COLOR_MAP = {
         'Energy consumption': '#52B415',
-        'Carbon-dioxide emissions': '#ffc800',
+        'Carbondioxide emissions': '#ffc800',
         'Water usage': '#cc0000',
         'Waste generation': '#8a2be2',
-        'Resource efficiency': '#ff6347',
       };
 
 export default class CustomRenderer extends BaseRenderer {
@@ -24,30 +23,40 @@ export default class CustomRenderer extends BaseRenderer {
   }
 
   canRender(element) {
-    return is(element, 'bpmn:Task') && element.businessObject.kei === 'Energy consumption';
+    const businessObject = element.businessObject;
+    // Ensure we are not rendering labels
+    return !element.labelTarget && (
+      businessObject.kei === 'Energy consumption' || 
+      businessObject.kei === 'Carbondioxide emissions' ||
+      businessObject.kei === 'Water usage' ||
+      businessObject.kei === 'Waste generation'
+    );
   }
 
   drawShape(parentNode, element) {
     const shape = this.bpmnRenderer.drawShape(parentNode, element);
+    const shapeHeight = shape.getBBox().height;
 
-    if (element.businessObject.kei === 'Energy consumption') {
+    const kei = element.businessObject.kei;
+    const keiValue = this.getKEIValue(element.businessObject, kei);
+
+    if (kei) {
       const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-      img.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', '/Users/idiloksuz/Desktop/bp/public/energyConsumption.jpg'); // Adjust the path to your image
-      img.setAttributeNS(null, 'x', element.width - 24);
-      img.setAttributeNS(null, 'y', 0);
+      img.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', this.getKEIImagePath(kei));
+      img.setAttributeNS(null, 'x', 0);
+      img.setAttributeNS(null, 'y', shapeHeight + 5);
       img.setAttributeNS(null, 'width', 24);
       img.setAttributeNS(null, 'height', 24);
       parentNode.appendChild(img);
 
-      // Add kWh text
       const text = svgCreate('text');
       svgAttr(text, {
-        x: element.width - 24,
-        y: 20,
+        x: 30,
+        y: shapeHeight + 20,
         'font-size': '12px',
         fill: 'black'
       });
-      text.textContent = `${element.businessObject.energyConsumption} kWh`;
+      text.textContent = keiValue;
       svgAppend(parentNode, text);
     }
 
@@ -55,10 +64,40 @@ export default class CustomRenderer extends BaseRenderer {
   }
 
   getShapePath(shape) {
-    if (is(shape, 'bpmn:Task')) {
+    if (is(shape, 'bpmn:Task') || is(shape, 'bpmn:ServiceTask') || is(shape, 'bpmn:UserTask') || is(shape, 'bpmn:ManualTask') || is(shape, 'bpmn:BusinessRuleTask')) {
       return getRoundRectPath(shape, TASK_BORDER_RADIUS);
     }
     return this.bpmnRenderer.getShapePath(shape);
+  }
+
+  getKEIImagePath(kei) {
+    switch (kei) {
+      case 'Energy consumption':
+        return './energyConsumption.jpg';
+      case 'Carbondioxide emissions':
+        return './carbonDioxideEmissions.jpg';
+      case 'Water usage':
+        return './waterUsage.png';
+      case 'Waste generation':
+        return './wasteGeneration.png';
+      default:
+        return '';
+    }
+  }
+
+  getKEIValue(businessObject, kei) {
+    switch (kei) {
+      case 'Energy consumption':
+        return `${businessObject.energyConsumption} kWh`;
+      case 'Carbondioxide emissions':
+        return `${businessObject.carbonDioxideEmissions} kg CO2`;
+      case 'Water usage':
+        return `${businessObject.waterUsage} liters`;
+      case 'Waste generation':
+        return `${businessObject.wasteGeneration} kg`;
+      default:
+        return '';
+    }
   }
 
   getColor(kei) {

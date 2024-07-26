@@ -10,13 +10,6 @@
       "name": "AnalyzedNode",
       "extends": [
         "bpmn:FlowNode"
-      ],
-      "properties": [
-        {
-          "name": "suitable",
-          "isAttr": true,
-          "type": "Integer"
-        }
       ]
     },
     {
@@ -58,23 +51,50 @@
       ]
     },
     {
-      "name": "AnalysisDetails",
+      "name": "CarbonDioxideEmissions",
       "superClass": ["Element"],
       "properties": [
         {
-          "name": "lastChecked",
+          "name": "value",
           "isAttr": true,
           "type": "String"
         },
         {
-          "name": "nextCheck",
+          "name": "unit",
+          "isAttr": true,
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "WaterUsage",
+      "superClass": ["Element"],
+      "properties": [
+        {
+          "name": "value",
           "isAttr": true,
           "type": "String"
         },
         {
-          "name": "comments",
-          "isMany": true,
-          "type": "Comment"
+          "name": "unit",
+          "isAttr": true,
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "WasteGeneration",
+      "superClass": ["Element"],
+      "properties": [
+        {
+          "name": "value",
+          "isAttr": true,
+          "type": "String"
+        },
+        {
+          "name": "unit",
+          "isAttr": true,
+          "type": "String"
         }
       ]
     },

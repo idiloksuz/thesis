@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const formEl = document.getElementById('form');
   const qualityAssuranceEl = document.getElementById('quality-assurance');
   const keisEl = document.getElementById('keis');
-  const lastCheckedEl = document.getElementById('last-checked');
   const okayEl = document.getElementById('okay');
   const warningEl = document.getElementById('warning');
   const saveButtonEl = document.getElementById('save-button');
@@ -23,10 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const keis = [
     "Energy consumption",
-    "Carbon-dioxide emissions",
+    "Carbondioxide emissions",
     "Water usage",
     "Waste generation",
-    "Resource efficiency"
   ];
 
   // Populate KEIs dropdown
@@ -57,7 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  keisEl.addEventListener('input', validate);
   const bpmnModeler = new BpmnModeler({
     container: '#container',
     additionalModules: [
@@ -111,51 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     keisEl.value = selectedKEI;
     keisEl.focus();
-
-    const analysisDetails = getExtensionElement(businessObject, 'qa:AnalysisDetails');
-    lastCheckedEl.textContent = analysisDetails ? analysisDetails.lastChecked : '-';
-
     validate();
-  });
-
-  // Set KEI and last checked if user submits
-  formEl.addEventListener('submit', (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-
-    if (!businessObject) {
-      console.error('No businessObject found');
-      return;
-    }
-
-    const selectedKEI = keisEl.value;
-    const moddle = bpmnModeler.get('moddle');
-    let extensionElements = businessObject.extensionElements;
-
-    if (!extensionElements) {
-      extensionElements = moddle.create('bpmn:ExtensionElements');
-      businessObject.extensionElements = extensionElements;
-    }
-
-    let analysisDetails = getExtensionElement(businessObject, 'qa:AnalysisDetails');
-
-    if (!analysisDetails) {
-      analysisDetails = moddle.create('qa:AnalysisDetails');
-      extensionElements.get('values').push(analysisDetails);
-    }
-
-    analysisDetails.lastChecked = new Date().toISOString();
-
-    bpmnModeler.get('modeling').updateProperties(currentElement, {
-      extensionElements: businessObject.extensionElements,
-      kei: selectedKEI
-    });
-
-    // Force a refresh of the element's visual representation
-    const updatedElement = bpmnModeler.get('elementRegistry').get(currentElement.id);
-    bpmnModeler.get('graphicsFactory').update('shape', updatedElement);
-
-    qualityAssuranceEl.classList.add('hidden');
   });
 
   // Save button click event
@@ -168,22 +121,6 @@ saveButtonEl.addEventListener('click', (e) => {
     saveAs(blob, 'diagram.bpmn');
   }).catch(err => console.error(err));
 });
-
-  // Close quality assurance if user presses escape
-  formEl.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-      qualityAssuranceEl.classList.add('hidden');
-    }
-  });
-
-  function getExtensionElement(element, type) {
-    if (!element.extensionElements) {
-      return;
-    }
-    return element.extensionElements.values.filter(extensionElement => {
-      return extensionElement.$instanceOf(type);
-    })[0];
-  }
 
   function getBusinessObject(element) {
     return element.businessObject || element;

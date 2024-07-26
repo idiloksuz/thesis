@@ -1,11 +1,3 @@
-const KEIS = {
-  ENERGY: 'Energy consumption',
-  CARBON: 'Carbon-dioxide emissions',
-  WATER: 'Water usage',
-  WASTE: 'Waste generation',
-  RESOURCE: 'Resource efficiency',
-};
-
 export default class CustomPalette {
   constructor(bpmnFactory, create, elementFactory, palette, translate) {
     this.bpmnFactory = bpmnFactory;
@@ -24,32 +16,54 @@ export default class CustomPalette {
       translate
     } = this;
 
-    function createTask(kei) {
-      return function(event) {
-        const businessObject = bpmnFactory.create('bpmn:Task');
-        businessObject.kei = kei;
-
-        const shape = elementFactory.createShape({
-          type: 'bpmn:Task',
-          businessObject: businessObject
-        });
-
-        create.start(event, shape);
-      };
-    }
-
-    return Object.keys(KEIS).reduce((entries, key) => {
-      entries[`create.${key.toLowerCase().replace(/_/g, '-')}-task`] = {
-        group: 'activity',
-        className: `bpmn-icon-task ${key.toLowerCase()}`,
-        title: translate(`Create Task with ${KEIS[key]} KEI`),
+    // Define any other palette entries you need, without KEI tasks
+    const entries = {
+      'create.start-event': {
+        group: 'event',
+        className: 'bpmn-icon-start-event-none',
+        title: translate('Create StartEvent'),
         action: {
-          dragstart: createTask(KEIS[key]),
-          click: createTask(KEIS[key])
+          dragstart: function(event) {
+            const shape = elementFactory.createShape({
+              type: 'bpmn:StartEvent'
+            });
+
+            create.start(event, shape);
+          },
+          click: function(event) {
+            const shape = elementFactory.createShape({
+              type: 'bpmn:StartEvent'
+            });
+
+            create.start(event, shape);
+          }
         }
-      };
-      return entries;
-    }, {});
+      },
+      'create.end-event': {
+        group: 'event',
+        className: 'bpmn-icon-end-event-none',
+        title: translate('Create EndEvent'),
+        action: {
+          dragstart: function(event) {
+            const shape = elementFactory.createShape({
+              type: 'bpmn:EndEvent'
+            });
+
+            create.start(event, shape);
+          },
+          click: function(event) {
+            const shape = elementFactory.createShape({
+              type: 'bpmn:EndEvent'
+            });
+
+            create.start(event, shape);
+          }
+        }
+      },
+      // Add other palette entries as needed
+    };
+
+    return entries;
   }
 }
 
