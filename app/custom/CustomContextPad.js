@@ -2,7 +2,14 @@ import { assign } from 'min-dash';
 import { is } from 'bpmn-js/lib/util/ModelUtil';
 
 const KEI_CATEGORIES = {
-  Energy: ["Energy consumption"],
+  Energy: [
+    "Energy consumption",
+    "Renewable energy",
+    "Non-Renewable energy",
+    "Indoor energy",
+    "Transportation energy",
+    "[Single source of energy]"
+  ],
   Waste: ["Waste generation"],
   Water: ["Water usage"],
   Emissions: ["Carbondioxide emissions"]
@@ -37,6 +44,11 @@ export default class CustomContextPad {
     const keiProperties = {
       kei: businessObject.kei,
       energyConsumption: businessObject.energyConsumption,
+      renewableEnergy: businessObject.renewableEnergy,
+      nonRenewableEnergy: businessObject.nonRenewableEnergy,
+      indoorEnergy: businessObject.indoorEnergy,
+      transportationEnergy: businessObject.transportationEnergy,
+      singleSourceOfEnergy: businessObject.singleSourceOfEnergy,
       carbonDioxideEmissions: businessObject.carbonDioxideEmissions,
       waterUsage: businessObject.waterUsage,
       wasteGeneration: businessObject.wasteGeneration
@@ -98,6 +110,21 @@ export default class CustomContextPad {
               if (kei === 'Energy consumption') {
                 const kwh = prompt('Enter the number of kWh:');
                 businessObject.energyConsumption = kwh;
+              } else if (kei === 'Renewable energy') {
+                const source = prompt('Enter the number of kWh for renewable energy:');
+                businessObject.renewableEnergy = source;
+              } else if (kei === 'Non-Renewable energy') {
+                const source = prompt('Enter the number of kWh for non-renewable energy:');
+                businessObject.nonRenewableEnergy = source;
+              } else if (kei === 'Indoor energy') {
+                const usage = prompt('Enter the number of kWh for indoor energy usage:');
+                businessObject.indoorEnergy = usage;
+              } else if (kei === 'Transportation energy') {
+                const usage = prompt('Enter the number of kWh for transportation energy usage:');
+                businessObject.transportationEnergy = usage;
+              } else if (kei === '[Single source of energy]') {
+                const source = prompt('Enter the number of kWh for single source of energy:');
+                businessObject.singleSourceOfEnergy = source;
               } else if (kei === 'Carbondioxide emissions') {
                 const kgs = prompt('Enter the number of kilograms of CO2:');
                 businessObject.carbonDioxideEmissions = kgs;
@@ -111,6 +138,11 @@ export default class CustomContextPad {
             } else {
               monitored = true;
               businessObject.energyConsumption = 'monitored';
+              businessObject.renewableEnergy = 'monitored';
+              businessObject.nonRenewableEnergy = 'monitored';
+              businessObject.indoorEnergy = 'monitored';
+              businessObject.transportationEnergy = 'monitored';
+              businessObject.singleSourceOfEnergy = 'monitored';
               businessObject.carbonDioxideEmissions = 'monitored';
               businessObject.waterUsage = 'monitored';
               businessObject.wasteGeneration = 'monitored';
@@ -195,6 +227,56 @@ function ensureKEIExtensionElement(businessObject, kei, monitored, bpmnModeler) 
       extensionElements.get('values').push(energyConsumptionElement);
     } else {
       energyConsumptionElement.value = monitored ? 'monitored' : businessObject.energyConsumption;
+    }
+  }
+
+  if (kei === 'Renewable energy') {
+    let renewableEnergyElement = extensionElements.get('values').find(el => el.$type === 'sm:RenewableEnergy');
+    if (!renewableEnergyElement) {
+      renewableEnergyElement = moddle.create('sm:RenewableEnergy', { value: monitored ? 'monitored' : businessObject.renewableEnergy, unit: 'kWh' });
+      extensionElements.get('values').push(renewableEnergyElement);
+    } else {
+      renewableEnergyElement.value = monitored ? 'monitored' : businessObject.renewableEnergy;
+    }
+  }
+
+  if (kei === 'Non-Renewable energy') {
+    let nonRenewableEnergyElement = extensionElements.get('values').find(el => el.$type === 'sm:NonRenewableEnergy');
+    if (!nonRenewableEnergyElement) {
+      nonRenewableEnergyElement = moddle.create('sm:NonRenewableEnergy', { value: monitored ? 'monitored' : businessObject.nonRenewableEnergy, unit: 'kWh' });
+      extensionElements.get('values').push(nonRenewableEnergyElement);
+    } else {
+      nonRenewableEnergyElement.value = monitored ? 'monitored' : businessObject.nonRenewableEnergy;
+    }
+  }
+
+  if (kei === 'Indoor energy') {
+    let indoorEnergyElement = extensionElements.get('values').find(el => el.$type === 'sm:IndoorEnergy');
+    if (!indoorEnergyElement) {
+      indoorEnergyElement = moddle.create('sm:IndoorEnergy', { value: monitored ? 'monitored' : businessObject.indoorEnergy, unit: 'kWh' });
+      extensionElements.get('values').push(indoorEnergyElement);
+    } else {
+      indoorEnergyElement.value = monitored ? 'monitored' : businessObject.indoorEnergy;
+    }
+  }
+
+  if (kei === 'Transportation energy') {
+    let transportationEnergyElement = extensionElements.get('values').find(el => el.$type === 'sm:TransportationEnergy');
+    if (!transportationEnergyElement) {
+      transportationEnergyElement = moddle.create('sm:TransportationEnergy', { value: monitored ? 'monitored' : businessObject.transportationEnergy, unit: 'kWh' });
+      extensionElements.get('values').push(transportationEnergyElement);
+    } else {
+      transportationEnergyElement.value = monitored ? 'monitored' : businessObject.transportationEnergy;
+    }
+  }
+
+  if (kei === '[Single source of energy]') {
+    let singleSourceOfEnergyElement = extensionElements.get('values').find(el => el.$type === 'sm:SingleSourceOfEnergy');
+    if (!singleSourceOfEnergyElement) {
+      singleSourceOfEnergyElement = moddle.create('sm:SingleSourceOfEnergy', { value: monitored ? 'monitored' : businessObject.singleSourceOfEnergy, unit: 'kWh' });
+      extensionElements.get('values').push(singleSourceOfEnergyElement);
+    } else {
+      singleSourceOfEnergyElement.value = monitored ? 'monitored' : businessObject.singleSourceOfEnergy;
     }
   }
 

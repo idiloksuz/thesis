@@ -51,6 +51,85 @@
       ]
     },
     {
+      "name": "RenewableEnergy",
+      "superClass": ["Element"],
+      "properties": [
+        {
+          "name": "value",
+          "isAttr": true,
+          "type": "String"
+        },
+        {
+          "name": "unit",
+          "isAttr": true,
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "NonRenewableEnergy",
+      "superClass": ["Element"],
+      "properties": [
+        {
+          "name": "value",
+          "isAttr": true,
+          "type": "String"
+        },
+        {
+          "name": "unit",
+          "isAttr": true,
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "IndoorEnergy",
+      "superClass": ["Element"],
+      "properties": [
+        {
+          "name": "value",
+          "isAttr": true,
+          "type": "String"
+        },
+        {
+          "name": "unit",
+          "isAttr": true,
+          "type": "String"        }
+      ]
+    },
+    {
+      "name": "TransportationEnergy",
+      "superClass": ["Element"],
+      "properties": [
+        {
+          "name": "value",
+          "isAttr": true,
+          "type": "String"
+        },
+        {
+          "name": "unit",
+          "isAttr": true,
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "SingleSourceOfEnergy",
+      "superClass": ["Element"],
+      "properties": [
+        {
+          "name": "value",
+          "isAttr": true,
+          "type": "String"
+        },
+        {
+          "name": "unit",
+          "isAttr": true,
+          "type": "String"
+        }
+      ]
+    },
+    {
       "name": "CarbonDioxideEmissions",
       "superClass": ["Element"],
       "properties": [

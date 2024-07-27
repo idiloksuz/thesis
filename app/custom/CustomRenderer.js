@@ -11,6 +11,11 @@ const HIGH_PRIORITY = 1500,
       TASK_BORDER_RADIUS = 2,
       COLOR_MAP = {
         'Energy consumption': '#52B415',
+        'Renewable energy': '#6c9d1a',
+        'Non-Renewable energy': '#8b0000',
+        'Indoor energy': '#ff8c00',
+        'Transportation energy': '#4682b4',
+        '[Single source of energy]': '#2e8b57',
         'Carbondioxide emissions': '#ffc800',
         'Water usage': '#cc0000',
         'Waste generation': '#8a2be2',
@@ -25,12 +30,7 @@ export default class CustomRenderer extends BaseRenderer {
   canRender(element) {
     const businessObject = element.businessObject;
     // Ensure we are not rendering labels
-    return !element.labelTarget && (
-      businessObject.kei === 'Energy consumption' || 
-      businessObject.kei === 'Carbondioxide emissions' ||
-      businessObject.kei === 'Water usage' ||
-      businessObject.kei === 'Waste generation'
-    );
+    return !element.labelTarget && COLOR_MAP[businessObject.kei];
   }
 
   drawShape(parentNode, element) {
@@ -74,6 +74,14 @@ export default class CustomRenderer extends BaseRenderer {
     switch (kei) {
       case 'Energy consumption':
         return './energyConsumption.jpg';
+      case 'Renewable energy':
+        return './renewableEnergy.jpg';
+      case 'Non-Renewable energy':
+        return './nonRenewableEnergy.jpg';
+      case 'Indoor energy':
+        return './indoorEnergy.jpg';
+      case 'Transportation energy':
+        return './transportationEnergy.jpg';
       case 'Carbondioxide emissions':
         return './carbonDioxideEmissions.jpg';
       case 'Water usage':
@@ -89,6 +97,16 @@ export default class CustomRenderer extends BaseRenderer {
     switch (kei) {
       case 'Energy consumption':
         return `${businessObject.energyConsumption} kWh`;
+      case 'Renewable energy':
+        return `${businessObject.renewableEnergy} kWh`;
+      case 'Non-Renewable energy':
+        return `${businessObject.nonRenewableEnergy} kWh`;
+      case 'Indoor energy':
+        return `${businessObject.indoorEnergy} kWh`;
+      case 'Transportation energy':
+        return `${businessObject.transportationEnergy} kWh`;
+      case '[Single source of energy]':
+        return `${businessObject.singleSourceOfEnergy} kWh`;
       case 'Carbondioxide emissions':
         return `${businessObject.carbonDioxideEmissions} kg CO2`;
       case 'Water usage':

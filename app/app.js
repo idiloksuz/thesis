@@ -10,52 +10,10 @@ import { saveAs } from 'file-saver';
 
 const HIGH_PRIORITY = 1500;
 
-  const keis = [
-    "Energy consumption",
-    "Carbondioxide emissions",
-    "Water usage",
-    "Waste generation",
-  ];
-
 document.addEventListener('DOMContentLoaded', () => {
   const containerEl = document.getElementById('container');
-  const formEl = document.getElementById('form');
-  const sustainabilityMetricsEl = document.getElementById('sustainability-metrics');
-  const keisEl = document.getElementById('keis');
-  const okayEl = document.getElementById('okay');
-  const warningEl = document.getElementById('warning');
   const saveButtonEl = document.getElementById('save-button');
   let currentElement, businessObject;
-
-
-  // Populate KEIs dropdown
-  keis.forEach(kei => {
-    const option = document.createElement('option');
-    option.value = kei;
-    option.textContent = kei;
-    keisEl.appendChild(option);
-  });
-
-  // Hide sustainability metrics if user clicks outside
-  window.addEventListener('click', (event) => {
-    const { target } = event;
-    if (target === sustainabilityMetricsEl || sustainabilityMetricsEl.contains(target)) {
-      return;
-    }
-    sustainabilityMetricsEl.classList.add('hidden');
-  });
-
-  // Validation function
-  function validate() {
-    const value = keisEl.value;
-    if (!value) {
-      warningEl.classList.remove('hidden');
-      okayEl.disabled = true;
-    } else {
-      warningEl.classList.add('hidden');
-      okayEl.disabled = false;
-    }
-  }
 
   const bpmnModeler = new BpmnModeler({
     container: '#container',
@@ -97,8 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
     event.originalEvent.preventDefault();
     event.originalEvent.stopPropagation();
 
-    sustainabilityMetricsEl.classList.remove('hidden');
-
     currentElement = event.element;
 
     // Ignore root element
@@ -107,20 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     businessObject = getBusinessObject(currentElement);
-    const selectedKEI = businessObject.kei || '';
-
-    keisEl.value = selectedKEI;
-    keisEl.focus();
-    validate();
-  });
-
-  // Save button click event
-  saveButtonEl.addEventListener('click', (e) => {
-    e.preventDefault();
-    bpmnModeler.saveXML({ format: true }).then(result => {
-      const blob = new Blob([result.xml], { type: 'application/xml' });
-      saveAs(blob, 'diagram.bpmn');
-    }).catch(err => console.error(err));
   });
 
   function getBusinessObject(element) {
