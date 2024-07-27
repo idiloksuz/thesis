@@ -1,7 +1,7 @@
 {
-  "name": "QualityAssurance",
-  "uri": "http://some-company/schema/bpmn/qa",
-  "prefix": "qa",
+  "name": "SustainabilityMetrics",
+  "uri": "http://some-company/schema/bpmn/sm",
+  "prefix": "sm",
   "xml": {
     "tagAlias": "lowerCase"
   },

@@ -179,9 +179,9 @@ function ensureKEIExtensionElement(businessObject, kei, monitored, bpmnModeler) 
   const extensionElements = businessObject.extensionElements || moddle.create('bpmn:ExtensionElements');
   businessObject.extensionElements = extensionElements;
 
-  let keiElement = extensionElements.get('values').find(el => el.$type === 'qa:Kei');
+  let keiElement = extensionElements.get('values').find(el => el.$type === 'sm:Kei');
   if (!keiElement) {
-    keiElement = moddle.create('qa:Kei', { value: kei, monitored: monitored });
+    keiElement = moddle.create('sm:Kei', { value: kei, monitored: monitored });
     extensionElements.get('values').push(keiElement);
   } else {
     keiElement.value = kei;
@@ -189,9 +189,9 @@ function ensureKEIExtensionElement(businessObject, kei, monitored, bpmnModeler) 
   }
 
   if (kei === 'Energy consumption') {
-    let energyConsumptionElement = extensionElements.get('values').find(el => el.$type === 'qa:EnergyConsumption');
+    let energyConsumptionElement = extensionElements.get('values').find(el => el.$type === 'sm:EnergyConsumption');
     if (!energyConsumptionElement) {
-      energyConsumptionElement = moddle.create('qa:EnergyConsumption', { value: monitored ? 'monitored' : businessObject.energyConsumption, unit: 'kWh' });
+      energyConsumptionElement = moddle.create('sm:EnergyConsumption', { value: monitored ? 'monitored' : businessObject.energyConsumption, unit: 'kWh' });
       extensionElements.get('values').push(energyConsumptionElement);
     } else {
       energyConsumptionElement.value = monitored ? 'monitored' : businessObject.energyConsumption;
@@ -199,9 +199,9 @@ function ensureKEIExtensionElement(businessObject, kei, monitored, bpmnModeler) 
   }
 
   if (kei === 'Carbondioxide emissions') {
-    let carbonDioxideEmissionsElement = extensionElements.get('values').find(el => el.$type === 'qa:CarbonDioxideEmissions');
+    let carbonDioxideEmissionsElement = extensionElements.get('values').find(el => el.$type === 'sm:CarbonDioxideEmissions');
     if (!carbonDioxideEmissionsElement) {
-      carbonDioxideEmissionsElement = moddle.create('qa:CarbonDioxideEmissions', { value: monitored ? 'monitored' : businessObject.carbonDioxideEmissions, unit: 'kg' });
+      carbonDioxideEmissionsElement = moddle.create('sm:CarbonDioxideEmissions', { value: monitored ? 'monitored' : businessObject.carbonDioxideEmissions, unit: 'kg' });
       extensionElements.get('values').push(carbonDioxideEmissionsElement);
     } else {
       carbonDioxideEmissionsElement.value = monitored ? 'monitored' : businessObject.carbonDioxideEmissions;
@@ -209,9 +209,9 @@ function ensureKEIExtensionElement(businessObject, kei, monitored, bpmnModeler) 
   }
 
   if (kei === 'Water usage') {
-    let waterUsageElement = extensionElements.get('values').find(el => el.$type === 'qa:WaterUsage');
+    let waterUsageElement = extensionElements.get('values').find(el => el.$type === 'sm:WaterUsage');
     if (!waterUsageElement) {
-      waterUsageElement = moddle.create('qa:WaterUsage', { value: monitored ? 'monitored' : businessObject.waterUsage, unit: 'liters' });
+      waterUsageElement = moddle.create('sm:WaterUsage', { value: monitored ? 'monitored' : businessObject.waterUsage, unit: 'liters' });
       extensionElements.get('values').push(waterUsageElement);
     } else {
       waterUsageElement.value = monitored ? 'monitored' : businessObject.waterUsage;
@@ -219,9 +219,9 @@ function ensureKEIExtensionElement(businessObject, kei, monitored, bpmnModeler) 
   }
 
   if (kei === 'Waste generation') {
-    let wasteGenerationElement = extensionElements.get('values').find(el => el.$type === 'qa:WasteGeneration');
+    let wasteGenerationElement = extensionElements.get('values').find(el => el.$type === 'sm:WasteGeneration');
     if (!wasteGenerationElement) {
-      wasteGenerationElement = moddle.create('qa:WasteGeneration', { value: monitored ? 'monitored' : businessObject.wasteGeneration, unit: 'kg' });
+      wasteGenerationElement = moddle.create('sm:WasteGeneration', { value: monitored ? 'monitored' : businessObject.wasteGeneration, unit: 'kg' });
       extensionElements.get('values').push(wasteGenerationElement);
     } else {
       wasteGenerationElement.value = monitored ? 'monitored' : businessObject.wasteGeneration;
