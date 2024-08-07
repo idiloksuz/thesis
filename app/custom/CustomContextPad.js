@@ -31,10 +31,37 @@ export default class CustomContextPad {
     }
 
     contextPad.registerProvider(this);
+    this.eventBus.on('shape.replace', (event) => {
+      const { oldShape, newShape } = event.context;
+      this.preserveKEIProperties(oldShape, newShape);
+    });
   }
 
   setBpmnModeler(bpmnModeler) {
     this.bpmnModeler = bpmnModeler;
+  }
+  preserveKEIProperties(oldShape, newShape) {
+    const oldBusinessObject = oldShape.businessObject;
+    const newBusinessObject = newShape.businessObject;
+
+    const keiProperties = {
+      kei: oldBusinessObject.kei,
+      energyConsumption: oldBusinessObject.energyConsumption,
+      renewableEnergy: oldBusinessObject.renewableEnergy,
+      nonRenewableEnergy: oldBusinessObject.nonRenewableEnergy,
+      indoorEnergy: oldBusinessObject.indoorEnergy,
+      transportationEnergy: oldBusinessObject.transportationEnergy,
+      singleSourceOfEnergy: oldBusinessObject.singleSourceOfEnergy,
+      carbonDioxideEmissions: oldBusinessObject.carbonDioxideEmissions,
+      waterUsage: oldBusinessObject.waterUsage,
+      wasteGeneration: oldBusinessObject.wasteGeneration,
+      monitored: oldBusinessObject.monitored
+    };
+
+    assign(newBusinessObject, keiProperties);
+
+    this.ensureKEIExtensionElements(newBusinessObject, keiProperties);
+    this.modeling.updateProperties(newShape, { businessObject: newBusinessObject });
   }
 
   changeTaskType(element, newType) {
@@ -51,17 +78,21 @@ export default class CustomContextPad {
       singleSourceOfEnergy: businessObject.singleSourceOfEnergy,
       carbonDioxideEmissions: businessObject.carbonDioxideEmissions,
       waterUsage: businessObject.waterUsage,
-      wasteGeneration: businessObject.wasteGeneration
+      wasteGeneration: businessObject.wasteGeneration,
+      monitored: businessObject.monitored
     };
 
     // Create a new element of the specified type
     const newElement = this.elementFactory.createShape({
       type: newType,
-      businessObject: businessObject
+      businessObject: this.bpmnFactory.create(newType)
     });
 
-    // Assign KEI properties to the new element
+    // Assign KEI properties to the new element's businessObject
     assign(newElement.businessObject, keiProperties);
+
+    // Ensure KEI extension elements are correctly handled during the replacement
+    ensureKEIExtensionElements(newElement.businessObject, keiProperties, this.bpmnModeler);
 
     // Replace the old element with the new element
     this.modeling.replaceShape(element, newElement);
@@ -150,7 +181,7 @@ export default class CustomContextPad {
 
             businessObject.monitored = monitored;
             businessObject.kei = kei;
-            ensureKEIExtensionElement(businessObject, kei, monitored, bpmnModeler);
+            ensureKEIExtensionElements(businessObject, { kei, monitored }, bpmnModeler);
             eventBus.fire('element.changed', { element });
             document.body.removeChild(menu);
           });
@@ -206,7 +237,8 @@ CustomContextPad.$inject = [
   'elementRegistry'
 ];
 
-function ensureKEIExtensionElement(businessObject, kei, monitored, bpmnModeler) {
+function ensureKEIExtensionElements(businessObject, keiProps, bpmnModeler) {
+  const { kei, monitored } = keiProps;
   const moddle = bpmnModeler.get('moddle');
   const extensionElements = businessObject.extensionElements || moddle.create('bpmn:ExtensionElements');
   businessObject.extensionElements = extensionElements;
@@ -220,94 +252,24 @@ function ensureKEIExtensionElement(businessObject, kei, monitored, bpmnModeler) 
     keiElement.monitored = monitored;
   }
 
-  if (kei === 'Energy consumption') {
-    let energyConsumptionElement = extensionElements.get('values').find(el => el.$type === 'sm:EnergyConsumption');
-    if (!energyConsumptionElement) {
-      energyConsumptionElement = moddle.create('sm:EnergyConsumption', { value: monitored ? 'monitored' : businessObject.energyConsumption, unit: 'kWh' });
-      extensionElements.get('values').push(energyConsumptionElement);
-    } else {
-      energyConsumptionElement.value = monitored ? 'monitored' : businessObject.energyConsumption;
-    }
-  }
+  handleKEIElement('Energy consumption', 'sm:EnergyConsumption', businessObject, 'energyConsumption', 'kWh', monitored, moddle, extensionElements);
+  handleKEIElement('Renewable energy', 'sm:RenewableEnergy', businessObject, 'renewableEnergy', 'kWh', monitored, moddle, extensionElements);
+  handleKEIElement('Non-Renewable energy', 'sm:NonRenewableEnergy', businessObject, 'nonRenewableEnergy', 'kWh', monitored, moddle, extensionElements);
+  handleKEIElement('Indoor energy', 'sm:IndoorEnergy', businessObject, 'indoorEnergy', 'kWh', monitored, moddle, extensionElements);
+  handleKEIElement('Transportation energy', 'sm:TransportationEnergy', businessObject, 'transportationEnergy', 'kWh', monitored, moddle, extensionElements);
+  handleKEIElement('[Single source of energy]', 'sm:SingleSourceOfEnergy', businessObject, 'singleSourceOfEnergy', 'kWh', monitored, moddle, extensionElements);
+  handleKEIElement('Carbondioxide emissions', 'sm:CarbonDioxideEmissions', businessObject, 'carbonDioxideEmissions', 'kg', monitored, moddle, extensionElements);
+  handleKEIElement('Water usage', 'sm:WaterUsage', businessObject, 'waterUsage', 'liters', monitored, moddle, extensionElements);
+  handleKEIElement('Waste generation', 'sm:WasteGeneration', businessObject, 'wasteGeneration', 'kg', monitored, moddle, extensionElements);
+}
 
-  if (kei === 'Renewable energy') {
-    let renewableEnergyElement = extensionElements.get('values').find(el => el.$type === 'sm:RenewableEnergy');
-    if (!renewableEnergyElement) {
-      renewableEnergyElement = moddle.create('sm:RenewableEnergy', { value: monitored ? 'monitored' : businessObject.renewableEnergy, unit: 'kWh' });
-      extensionElements.get('values').push(renewableEnergyElement);
-    } else {
-      renewableEnergyElement.value = monitored ? 'monitored' : businessObject.renewableEnergy;
-    }
-  }
-
-  if (kei === 'Non-Renewable energy') {
-    let nonRenewableEnergyElement = extensionElements.get('values').find(el => el.$type === 'sm:NonRenewableEnergy');
-    if (!nonRenewableEnergyElement) {
-      nonRenewableEnergyElement = moddle.create('sm:NonRenewableEnergy', { value: monitored ? 'monitored' : businessObject.nonRenewableEnergy, unit: 'kWh' });
-      extensionElements.get('values').push(nonRenewableEnergyElement);
-    } else {
-      nonRenewableEnergyElement.value = monitored ? 'monitored' : businessObject.nonRenewableEnergy;
-    }
-  }
-
-  if (kei === 'Indoor energy') {
-    let indoorEnergyElement = extensionElements.get('values').find(el => el.$type === 'sm:IndoorEnergy');
-    if (!indoorEnergyElement) {
-      indoorEnergyElement = moddle.create('sm:IndoorEnergy', { value: monitored ? 'monitored' : businessObject.indoorEnergy, unit: 'kWh' });
-      extensionElements.get('values').push(indoorEnergyElement);
-    } else {
-      indoorEnergyElement.value = monitored ? 'monitored' : businessObject.indoorEnergy;
-    }
-  }
-
-  if (kei === 'Transportation energy') {
-    let transportationEnergyElement = extensionElements.get('values').find(el => el.$type === 'sm:TransportationEnergy');
-    if (!transportationEnergyElement) {
-      transportationEnergyElement = moddle.create('sm:TransportationEnergy', { value: monitored ? 'monitored' : businessObject.transportationEnergy, unit: 'kWh' });
-      extensionElements.get('values').push(transportationEnergyElement);
-    } else {
-      transportationEnergyElement.value = monitored ? 'monitored' : businessObject.transportationEnergy;
-    }
-  }
-
-  if (kei === '[Single source of energy]') {
-    let singleSourceOfEnergyElement = extensionElements.get('values').find(el => el.$type === 'sm:SingleSourceOfEnergy');
-    if (!singleSourceOfEnergyElement) {
-      singleSourceOfEnergyElement = moddle.create('sm:SingleSourceOfEnergy', { value: monitored ? 'monitored' : businessObject.singleSourceOfEnergy, unit: 'kWh' });
-      extensionElements.get('values').push(singleSourceOfEnergyElement);
-    } else {
-      singleSourceOfEnergyElement.value = monitored ? 'monitored' : businessObject.singleSourceOfEnergy;
-    }
-  }
-
-  if (kei === 'Carbondioxide emissions') {
-    let carbonDioxideEmissionsElement = extensionElements.get('values').find(el => el.$type === 'sm:CarbonDioxideEmissions');
-    if (!carbonDioxideEmissionsElement) {
-      carbonDioxideEmissionsElement = moddle.create('sm:CarbonDioxideEmissions', { value: monitored ? 'monitored' : businessObject.carbonDioxideEmissions, unit: 'kg' });
-      extensionElements.get('values').push(carbonDioxideEmissionsElement);
-    } else {
-      carbonDioxideEmissionsElement.value = monitored ? 'monitored' : businessObject.carbonDioxideEmissions;
-    }
-  }
-
-  if (kei === 'Water usage') {
-    let waterUsageElement = extensionElements.get('values').find(el => el.$type === 'sm:WaterUsage');
-    if (!waterUsageElement) {
-      waterUsageElement = moddle.create('sm:WaterUsage', { value: monitored ? 'monitored' : businessObject.waterUsage, unit: 'liters' });
-      extensionElements.get('values').push(waterUsageElement);
-    } else {
-      waterUsageElement.value = monitored ? 'monitored' : businessObject.waterUsage;
-    }
-  }
-
-  if (kei === 'Waste generation') {
-    let wasteGenerationElement = extensionElements.get('values').find(el => el.$type === 'sm:WasteGeneration');
-    if (!wasteGenerationElement) {
-      wasteGenerationElement = moddle.create('sm:WasteGeneration', { value: monitored ? 'monitored' : businessObject.wasteGeneration, unit: 'kg' });
-      extensionElements.get('values').push(wasteGenerationElement);
-    } else {
-      wasteGenerationElement.value = monitored ? 'monitored' : businessObject.wasteGeneration;
-    }
+function handleKEIElement(keiType, elementType, businessObject, property, unit, monitored, moddle, extensionElements) {
+  let keiElement = extensionElements.get('values').find(el => el.$type === elementType);
+  if (!keiElement) {
+    keiElement = moddle.create(elementType, { value: monitored ? 'monitored' : businessObject[property], unit: unit });
+    extensionElements.get('values').push(keiElement);
+  } else {
+    keiElement.value = monitored ? 'monitored' : businessObject[property];
   }
 }
 

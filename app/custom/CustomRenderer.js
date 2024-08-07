@@ -29,8 +29,8 @@ export default class CustomRenderer extends BaseRenderer {
 
   canRender(element) {
     const businessObject = element.businessObject;
-    // Ensure we are not rendering labels
-    return !element.labelTarget && COLOR_MAP[businessObject.kei];
+    // Ensure we are not rendering labels and the element has a KEI
+    return !element.labelTarget && businessObject.kei;
   }
 
   drawShape(parentNode, element) {
@@ -41,6 +41,7 @@ export default class CustomRenderer extends BaseRenderer {
     const keiValue = this.getKEIValue(element.businessObject, kei);
 
     if (kei) {
+      // Draw KEI image
       const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
       img.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', this.getKEIImagePath(kei));
       img.setAttributeNS(null, 'x', 0);
@@ -49,6 +50,7 @@ export default class CustomRenderer extends BaseRenderer {
       img.setAttributeNS(null, 'height', 24);
       parentNode.appendChild(img);
 
+      // Draw KEI text value
       const text = svgCreate('text');
       svgAttr(text, {
         x: 30,
