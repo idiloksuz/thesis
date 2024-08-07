@@ -31,37 +31,10 @@ export default class CustomContextPad {
     }
 
     contextPad.registerProvider(this);
-    this.eventBus.on('shape.replace', (event) => {
-      const { oldShape, newShape } = event.context;
-      this.preserveKEIProperties(oldShape, newShape);
-    });
   }
 
   setBpmnModeler(bpmnModeler) {
     this.bpmnModeler = bpmnModeler;
-  }
-  preserveKEIProperties(oldShape, newShape) {
-    const oldBusinessObject = oldShape.businessObject;
-    const newBusinessObject = newShape.businessObject;
-
-    const keiProperties = {
-      kei: oldBusinessObject.kei,
-      energyConsumption: oldBusinessObject.energyConsumption,
-      renewableEnergy: oldBusinessObject.renewableEnergy,
-      nonRenewableEnergy: oldBusinessObject.nonRenewableEnergy,
-      indoorEnergy: oldBusinessObject.indoorEnergy,
-      transportationEnergy: oldBusinessObject.transportationEnergy,
-      singleSourceOfEnergy: oldBusinessObject.singleSourceOfEnergy,
-      carbonDioxideEmissions: oldBusinessObject.carbonDioxideEmissions,
-      waterUsage: oldBusinessObject.waterUsage,
-      wasteGeneration: oldBusinessObject.wasteGeneration,
-      monitored: oldBusinessObject.monitored
-    };
-
-    assign(newBusinessObject, keiProperties);
-
-    this.ensureKEIExtensionElements(newBusinessObject, keiProperties);
-    this.modeling.updateProperties(newShape, { businessObject: newBusinessObject });
   }
 
   changeTaskType(element, newType) {
@@ -92,7 +65,7 @@ export default class CustomContextPad {
     assign(newElement.businessObject, keiProperties);
 
     // Ensure KEI extension elements are correctly handled during the replacement
-    ensureKEIExtensionElements(newElement.businessObject, keiProperties, this.bpmnModeler);
+    ensureKEIExtensionElement(newElement.businessObject, keiProperties.kei, keiProperties.monitored, this.bpmnModeler);
 
     // Replace the old element with the new element
     this.modeling.replaceShape(element, newElement);
@@ -181,7 +154,7 @@ export default class CustomContextPad {
 
             businessObject.monitored = monitored;
             businessObject.kei = kei;
-            ensureKEIExtensionElements(businessObject, { kei, monitored }, bpmnModeler);
+            ensureKEIExtensionElement(businessObject, kei, monitored, bpmnModeler);
             eventBus.fire('element.changed', { element });
             document.body.removeChild(menu);
           });
@@ -237,8 +210,7 @@ CustomContextPad.$inject = [
   'elementRegistry'
 ];
 
-function ensureKEIExtensionElements(businessObject, keiProps, bpmnModeler) {
-  const { kei, monitored } = keiProps;
+function ensureKEIExtensionElement(businessObject, kei, monitored, bpmnModeler) {
   const moddle = bpmnModeler.get('moddle');
   const extensionElements = businessObject.extensionElements || moddle.create('bpmn:ExtensionElements');
   businessObject.extensionElements = extensionElements;
@@ -264,12 +236,14 @@ function ensureKEIExtensionElements(businessObject, keiProps, bpmnModeler) {
 }
 
 function handleKEIElement(keiType, elementType, businessObject, property, unit, monitored, moddle, extensionElements) {
-  let keiElement = extensionElements.get('values').find(el => el.$type === elementType);
-  if (!keiElement) {
-    keiElement = moddle.create(elementType, { value: monitored ? 'monitored' : businessObject[property], unit: unit });
-    extensionElements.get('values').push(keiElement);
-  } else {
-    keiElement.value = monitored ? 'monitored' : businessObject[property];
+  if (businessObject.kei === keiType) {
+    let keiElement = extensionElements.get('values').find(el => el.$type === elementType);
+    if (!keiElement) {
+      keiElement = moddle.create(elementType, { value: monitored ? 'monitored' : businessObject[property], unit: unit });
+      extensionElements.get('values').push(keiElement);
+    } else {
+      keiElement.value = monitored ? 'monitored' : businessObject[property];
+    }
   }
 }
 
