@@ -25,23 +25,43 @@ export default class CustomRenderer extends BaseRenderer {
   constructor(eventBus, bpmnRenderer) {
     super(eventBus, HIGH_PRIORITY);
     this.bpmnRenderer = bpmnRenderer;
+
+    eventBus.on('element.changed', (event) => {
+      const element = event.element;
+      if (this.canRender(element)) {
+        const gfx = this.getGraphics(element);
+        // call printGraphics to print the graphics
+        this.printGraphics(element);
+        this.drawKEI(element, gfx);
+        console.log('Element changed:', element);
+      }
+    });
   }
 
   canRender(element) {
     const businessObject = element.businessObject;
-    // Ensure we are not rendering labels and the element has a KEI
     return !element.labelTarget && businessObject.kei;
   }
 
   drawShape(parentNode, element) {
     const shape = this.bpmnRenderer.drawShape(parentNode, element);
-    const shapeHeight = shape.getBBox().height;
+    this.drawKEI(element, parentNode);
+    console.log('Drawing shape:', element);
+    return shape;
+  }
 
+  drawKEI(element, parentNode) {
+    //print parent node
+    if (!parentNode) {
+      console.error('parentNode is undefined for element:', element);
+      return;
+    }
+
+    const shapeHeight = element.height;
     const kei = element.businessObject.kei;
     const keiValue = this.getKEIValue(element.businessObject, kei);
 
     if (kei) {
-      // Draw KEI image
       const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
       img.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', this.getKEIImagePath(kei));
       img.setAttributeNS(null, 'x', 0);
@@ -50,7 +70,6 @@ export default class CustomRenderer extends BaseRenderer {
       img.setAttributeNS(null, 'height', 24);
       parentNode.appendChild(img);
 
-      // Draw KEI text value
       const text = svgCreate('text');
       svgAttr(text, {
         x: 30,
@@ -61,8 +80,6 @@ export default class CustomRenderer extends BaseRenderer {
       text.textContent = keiValue;
       svgAppend(parentNode, text);
     }
-
-    return shape;
   }
 
   getShapePath(shape) {
@@ -122,6 +139,15 @@ export default class CustomRenderer extends BaseRenderer {
 
   getColor(kei) {
     return COLOR_MAP[kei] || '#000';
+  }
+    // Helper function to get graphics for the element
+  getGraphics(element) {
+    return element && element.gfx;
+  }
+  //prin the graphics
+  printGraphics(element) {
+    const gfx = this.getGraphics(element);
+    console.log('Graphics for element:', element, gfx);
   }
 }
 
