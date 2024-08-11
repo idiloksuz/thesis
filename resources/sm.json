@@ -23,7 +23,7 @@
       ]
     },
     {
-      "name": "EnergyConsumption",
+      "name": "energyConsumption",
       "superClass": ["Element"],
       "properties": [
         {
@@ -44,7 +44,7 @@
       ]
     },
     {
-      "name": "RenewableEnergy",
+      "name": "renewableEnergy",
       "superClass": ["Element"],
       "properties": [
         {
@@ -65,7 +65,7 @@
       ]
     },
     {
-      "name": "NonRenewableEnergy",
+      "name": "nonRenewableEnergy",
       "superClass": ["Element"],
       "properties": [
         {
@@ -86,7 +86,7 @@
       ]
     },
     {
-      "name": "IndoorEnergy",
+      "name": "indoorEnergy",
       "superClass": ["Element"],
       "properties": [
         {
@@ -107,7 +107,7 @@
       ]
     },
     {
-      "name": "TransportationEnergy",
+      "name": "transportationEnergy",
       "superClass": ["Element"],
       "properties": [
         {
@@ -128,7 +128,7 @@
       ]
     },
     {
-      "name": "SingleSourceOfEnergy",
+      "name": "singleSourceOfEnergy",
       "superClass": ["Element"],
       "properties": [
         {
@@ -149,7 +149,7 @@
       ]
     },
     {
-      "name": "CarbonDioxideEmissions",
+      "name": "carbonDioxideEmissions",
       "superClass": ["Element"],
       "properties": [
         {
@@ -170,7 +170,7 @@
       ]
     },
     {
-      "name": "WaterUsage",
+      "name": "waterUsage",
       "superClass": ["Element"],
       "properties": [
         {
@@ -191,7 +191,7 @@
       ]
     },
     {
-      "name": "WasteGeneration",
+      "name": "wasteGeneration",
       "superClass": ["Element"],
       "properties": [
         {

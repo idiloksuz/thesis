@@ -10,15 +10,15 @@ import { is, getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
 const HIGH_PRIORITY = 1500,
       TASK_BORDER_RADIUS = 2,
       COLOR_MAP = {
-        'Energy consumption': '#52B415',
-        'Renewable energy': '#6c9d1a',
-        'Non-Renewable energy': '#8b0000',
-        'Indoor energy': '#ff8c00',
-        'Transportation energy': '#4682b4',
-        '[Single source of energy]': '#2e8b57',
-        'Carbondioxide emissions': '#ffc800',
-        'Water usage': '#cc0000',
-        'Waste generation': '#8a2be2',
+        'energyConsumption': '#52B415',
+        'renewableEnergy': '#6c9d1a',
+        'nonRenewableEnergy': '#8b0000',
+        'indoorEnergy': '#ff8c00',
+        'transportationEnergy': '#4682b4',
+        '[singleSourceOfEnergy]': '#2e8b57',
+        'carbondioxideEmissions': '#ffc800',
+        'waterUsage': '#cc0000',
+        'wasteGeneration': '#8a2be2',
       };
 
 export default class CustomRenderer extends BaseRenderer {
@@ -91,21 +91,21 @@ export default class CustomRenderer extends BaseRenderer {
 
   getKEIImagePath(kei) {
     switch (kei) {
-      case 'Energy consumption':
+      case 'energyConsumption':
         return './energyConsumption.jpg';
-      case 'Renewable energy':
+      case 'renewableEnergy':
         return './renewableEnergy.jpg';
-      case 'Non-Renewable energy':
+      case 'nonRenewableEnergy':
         return './nonRenewableEnergy.jpg';
-      case 'Indoor energy':
+      case 'indoorEnergy':
         return './indoorEnergy.jpg';
-      case 'Transportation energy':
+      case 'transportationEnergy':
         return './transportationEnergy.jpg';
-      case 'Carbondioxide emissions':
+      case 'carbondioxideEmissions':
         return './carbonDioxideEmissions.jpg';
-      case 'Water usage':
+      case 'waterUsage':
         return './waterUsage.png';
-      case 'Waste generation':
+      case 'wasteGeneration':
         return './wasteGeneration.png';
       default:
         return '';
@@ -114,23 +114,23 @@ export default class CustomRenderer extends BaseRenderer {
 
   getKEIValue(businessObject, kei) {
     switch (kei) {
-      case 'Energy consumption':
+      case 'energyConsumption':
         return `${businessObject.energyConsumption} kWh`;
-      case 'Renewable energy':
+      case 'renewableEnergy':
         return `${businessObject.renewableEnergy} kWh`;
-      case 'Non-Renewable energy':
+      case 'nonRenewableEnergy':
         return `${businessObject.nonRenewableEnergy} kWh`;
-      case 'Indoor energy':
+      case 'indoorEnergy':
         return `${businessObject.indoorEnergy} kWh`;
-      case 'Transportation energy':
+      case 'transportationEnergy':
         return `${businessObject.transportationEnergy} kWh`;
-      case '[Single source of energy]':
+      case '[singleSourceOfEnergy]':
         return `${businessObject.singleSourceOfEnergy} kWh`;
-      case 'Carbondioxide emissions':
+      case 'carbondioxideEmissions':
         return `${businessObject.carbonDioxideEmissions} kg CO2`;
-      case 'Water usage':
+      case 'waterUsage':
         return `${businessObject.waterUsage} liters`;
-      case 'Waste generation':
+      case 'wasteGeneration':
         return `${businessObject.wasteGeneration} kg`;
       default:
         return '';

@@ -83,7 +83,9 @@ export default class CustomPalette {
 
     // Fire element changed event
     this.eventBus.fire('element.changed', { element: newElement });
-  } ensureKEIExtensionElements(businessObject, keiProperties) {
+  }   
+  
+  ensureKEIExtensionElements(businessObject, keiProperties) {
     const moddle = this.bpmnModeler.get('moddle');
     let extensionElements = businessObject.extensionElements;
 
@@ -119,16 +121,17 @@ export default class CustomPalette {
 
     // Handle specific KEI elements based on the keiProperties
     const measured = keiProperties.measured;
-    this.handleKEIElement('Energy consumption', 'sm:EnergyConsumption', businessObject, 'energyConsumption', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('Renewable energy', 'sm:RenewableEnergy', businessObject, 'renewableEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('Non-Renewable energy', 'sm:NonRenewableEnergy', businessObject, 'nonRenewableEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('Indoor energy', 'sm:IndoorEnergy', businessObject, 'indoorEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('Transportation energy', 'sm:TransportationEnergy', businessObject, 'transportationEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('[Single source of energy]', 'sm:SingleSourceOfEnergy', businessObject, 'singleSourceOfEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('Carbondioxide emissions', 'sm:CarbonDioxideEmissions', businessObject, 'carbonDioxideEmissions', 'kg', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('Water usage', 'sm:WaterUsage', businessObject, 'waterUsage', 'liters', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('Waste generation', 'sm:WasteGeneration', businessObject, 'wasteGeneration', 'kg', keiProperties.monitored, measured, moddle, extensionElements);
+    this.handleKEIElement('energyConsumption', 'sm:energyConsumption', businessObject, 'energyConsumption', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
+    this.handleKEIElement('renewableEnergy', 'sm:renewableEnergy', businessObject, 'renewableEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
+    this.handleKEIElement('nonRenewableEnergy', 'sm:nonRenewableEnergy', businessObject, 'nonRenewableEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
+    this.handleKEIElement('indoorEnergy', 'sm:indoorEnergy', businessObject, 'indoorEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
+    this.handleKEIElement('transportationEnergy', 'sm:transportationEnergy', businessObject, 'transportationEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
+    this.handleKEIElement('[singleSourceOfEnergy]', 'sm:singleSourceOfEnergy', businessObject, 'singleSourceOfEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
+    this.handleKEIElement('carbonDioxideEmissions', 'sm:carbonDioxideEmissions', businessObject, 'carbonDioxideEmissions', 'kg', keiProperties.monitored, measured, moddle, extensionElements);
+    this.handleKEIElement('waterUsage', 'sm:waterUsage', businessObject, 'waterUsage', 'liters', keiProperties.monitored, measured, moddle, extensionElements);
+    this.handleKEIElement('wasteGeneration', 'sm:wasteGeneration', businessObject, 'wasteGeneration', 'kg', keiProperties.monitored, measured, moddle, extensionElements);
   }
+
   handleKEIElement(keiType, elementType, businessObject, property, unit, monitored, measured, moddle, extensionElements) {
     if (businessObject.kei === keiType) {
       let keiElement = extensionElements.get('values').find(el => el.$type === elementType);

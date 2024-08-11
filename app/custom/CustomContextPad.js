@@ -3,16 +3,16 @@ import { is } from 'bpmn-js/lib/util/ModelUtil';
 
 const KEI_CATEGORIES = {
   Energy: [
-    "Energy consumption",
-    "Renewable energy",
-    "Non-Renewable energy",
-    "Indoor energy",
-    "Transportation energy",
-    "[Single source of energy]"
+    "energyConsumption",
+    "renewableEnergy",
+    "nonRenewableEnergy",
+    "indoorEnergy",
+    "transportationEnergy",
+    "[singleSourceOfEnergy]"
   ],
-  Waste: ["Waste generation"],
-  Water: ["Water usage"],
-  Emissions: ["Carbondioxide emissions"]
+  Waste: ["wasteGeneration"],
+  Water: ["waterUsage"],
+  Emissions: ["carbondioxideEmissions"]
 };
 
 export default class CustomContextPad {
@@ -111,15 +111,15 @@ export default class CustomContextPad {
 
     // Handle specific KEI elements based on the keiProperties
     const measured = keiProperties.measured;
-    this.handleKEIElement('Energy consumption', 'sm:EnergyConsumption', businessObject, 'energyConsumption', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('Renewable energy', 'sm:RenewableEnergy', businessObject, 'renewableEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('Non-Renewable energy', 'sm:NonRenewableEnergy', businessObject, 'nonRenewableEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('Indoor energy', 'sm:IndoorEnergy', businessObject, 'indoorEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('Transportation energy', 'sm:TransportationEnergy', businessObject, 'transportationEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('[Single source of energy]', 'sm:SingleSourceOfEnergy', businessObject, 'singleSourceOfEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('Carbondioxide emissions', 'sm:CarbonDioxideEmissions', businessObject, 'carbonDioxideEmissions', 'kg', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('Water usage', 'sm:WaterUsage', businessObject, 'waterUsage', 'liters', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('Waste generation', 'sm:WasteGeneration', businessObject, 'wasteGeneration', 'kg', keiProperties.monitored, measured, moddle, extensionElements);
+    this.handleKEIElement('energyConsumption', 'sm:energyConsumption', businessObject, 'energyConsumption', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
+    this.handleKEIElement('renewableEnergy', 'sm:renewableEnergy', businessObject, 'renewableEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
+    this.handleKEIElement('nonRenewableEnergy', 'sm:nonRenewableEnergy', businessObject, 'nonRenewableEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
+    this.handleKEIElement('indoorEnergy', 'sm:indoorEnergy', businessObject, 'indoorEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
+    this.handleKEIElement('transportationEnergy', 'sm:transportationEnergy', businessObject, 'transportationEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
+    this.handleKEIElement('[singleSourceOfEnergy]', 'sm:singleSourceOfEnergy', businessObject, 'singleSourceOfEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
+    this.handleKEIElement('carbonDioxideEmissions', 'sm:carbonDioxideEmissions', businessObject, 'carbonDioxideEmissions', 'kg', keiProperties.monitored, measured, moddle, extensionElements);
+    this.handleKEIElement('waterUsage', 'sm:waterUsage', businessObject, 'waterUsage', 'liters', keiProperties.monitored, measured, moddle, extensionElements);
+    this.handleKEIElement('wasteGeneration', 'sm:wasteGeneration', businessObject, 'wasteGeneration', 'kg', keiProperties.monitored, measured, moddle, extensionElements);
   }
 
   handleKEIElement(keiType, elementType, businessObject, property, unit, monitored, measured, moddle, extensionElements) {
@@ -201,31 +201,31 @@ export default class CustomContextPad {
             this.ensureKEIExtensionElements(businessObject, { kei, monitored, measured });
             eventBus.fire('element.changed', { element });
             if (measured) {
-              if (kei === 'Energy consumption') {
+              if (kei === 'energyConsumption') {
                 const kwh = prompt('Enter the number of kWh:');
                 businessObject.energyConsumption = kwh;
-              } else if (kei === 'Renewable energy') {
-                const source = prompt('Enter the number of kWh for renewable energy:');
+              } else if (kei === 'renewableEnergy') {
+                const source = prompt('Enter the number of kWh for :');
                 businessObject.renewableEnergy = source;
-              } else if (kei === 'Non-Renewable energy') {
+              } else if (kei === 'nonRenewableEnergy') {
                 const source = prompt('Enter the number of kWh for non-renewable energy:');
                 businessObject.nonRenewableEnergy = source;
-              } else if (kei === 'Indoor energy') {
+              } else if (kei === 'indoorEnergy') {
                 const usage = prompt('Enter the number of kWh for indoor energy usage:');
                 businessObject.indoorEnergy = usage;
-              } else if (kei === 'Transportation energy') {
+              } else if (kei === 'transportationEnergy') {
                 const usage = prompt('Enter the number of kWh for transportation energy usage:');
                 businessObject.transportationEnergy = usage;
-              } else if (kei === '[Single source of energy]') {
+              } else if (kei === '[singleSourceOfEnergy]') {
                 const source = prompt('Enter the number of kWh for single source of energy:');
                 businessObject.singleSourceOfEnergy = source;
-              } else if (kei === 'Carbondioxide emissions') {
+              } else if (kei === 'carbonDioxideEmissions') {
                 const kgs = prompt('Enter the number of kilograms of CO2:');
                 businessObject.carbonDioxideEmissions = kgs;
-              } else if (kei === 'Water usage') {
+              } else if (kei === 'waterUsage') {
                 const liters = prompt('Enter the number of liters:');
                 businessObject.waterUsage = liters;
-              } else if (kei === 'Waste generation') {
+              } else if (kei === 'wasteGeneration') {
                 const kgs = prompt('Enter the number of kilograms:');
                 businessObject.wasteGeneration = kgs;
               }
