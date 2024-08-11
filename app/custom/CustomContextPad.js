@@ -76,20 +76,42 @@ export default class CustomContextPad {
     console.log('Preserved KEI properties:', keiProperties);
   }
 
+
   ensureKEIExtensionElements(businessObject, keiProperties) {
     const moddle = this.bpmnModeler.get('moddle');
-    const extensionElements = businessObject.extensionElements || moddle.create('bpmn:ExtensionElements');
-    businessObject.extensionElements = extensionElements;
+    let extensionElements = businessObject.extensionElements;
 
-    let keiElement = extensionElements.get('values').find(el => el.$type === 'sm:Kei');
-    if (!keiElement) {
-      keiElement = moddle.create('sm:Kei', { value: keiProperties.kei, monitored: keiProperties.monitored });
-      extensionElements.get('values').push(keiElement);
-    } else {
-      keiElement.value = keiProperties.kei;
-      keiElement.monitored = keiProperties.monitored;
+    // Ensure that extensionElements exists on the businessObject
+    if (!extensionElements) {
+        extensionElements = moddle.create('bpmn:ExtensionElements');
+        businessObject.extensionElements = extensionElements;
     }
 
+    // Initialize the values array if it doesn't exist
+    if (!extensionElements.values) {
+        extensionElements.values = [];
+    }
+
+    // Remove all existing KEI-specific elements before adding the new one
+    extensionElements.values = extensionElements.values.filter(el => el.$type === 'sm:Kei' || !el.$type.startsWith('sm:'));
+
+    // Ensure the KEI main element exists or create it
+    let keiElement = extensionElements.get('values').find(el => el.$type === 'sm:Kei');
+    if (!keiElement) {
+        keiElement = moddle.create('sm:Kei', { value: keiProperties.kei });
+        extensionElements.get('values').push(keiElement);
+    } else {
+        keiElement.value = keiProperties.kei;
+    }
+
+    // Update the monitored attribute if needed
+    if (keiProperties.monitored) {
+        keiElement.monitored = 'true';
+    } else {
+        delete keiElement.monitored;
+    }
+
+    // Handle specific KEI elements based on the keiProperties
     this.handleKEIElement('Energy consumption', 'sm:EnergyConsumption', businessObject, 'energyConsumption', 'kWh', keiProperties.monitored, moddle, extensionElements);
     this.handleKEIElement('Renewable energy', 'sm:RenewableEnergy', businessObject, 'renewableEnergy', 'kWh', keiProperties.monitored, moddle, extensionElements);
     this.handleKEIElement('Non-Renewable energy', 'sm:NonRenewableEnergy', businessObject, 'nonRenewableEnergy', 'kWh', keiProperties.monitored, moddle, extensionElements);
@@ -99,19 +121,44 @@ export default class CustomContextPad {
     this.handleKEIElement('Carbondioxide emissions', 'sm:CarbonDioxideEmissions', businessObject, 'carbonDioxideEmissions', 'kg', keiProperties.monitored, moddle, extensionElements);
     this.handleKEIElement('Water usage', 'sm:WaterUsage', businessObject, 'waterUsage', 'liters', keiProperties.monitored, moddle, extensionElements);
     this.handleKEIElement('Waste generation', 'sm:WasteGeneration', businessObject, 'wasteGeneration', 'kg', keiProperties.monitored, moddle, extensionElements);
-  }
+}
 
-  handleKEIElement(keiType, elementType, businessObject, property, unit, monitored, moddle, extensionElements) {
-    if (businessObject.kei === keiType) {
+handleKEIElement(keiType, elementType, businessObject, property, unit, monitored, moddle, extensionElements) {
+  if (businessObject.kei === keiType) {
       let keiElement = extensionElements.get('values').find(el => el.$type === elementType);
-      if (!keiElement) {
-        keiElement = moddle.create(elementType, { value: monitored ? 'monitored' : businessObject[property], unit: unit });
-        extensionElements.get('values').push(keiElement);
-      } else {
-        keiElement.value = monitored ? 'monitored' : businessObject[property];
+
+      const keiValue = businessObject[property];
+      const shouldCreateOrUpdate = keiValue || unit;
+
+      if (shouldCreateOrUpdate) {
+          if (!keiElement) {
+              keiElement = moddle.create(elementType, {});
+              extensionElements.get('values').push(keiElement);
+          }
+
+          if (keiValue) {
+              keiElement.value = keiValue;
+          } else {
+              delete keiElement.value;
+          }
+
+          if (unit) {
+              keiElement.unit = unit;
+          } else {
+              delete keiElement.unit;
+          }
+
+          if (monitored) {
+              keiElement.monitored = 'true';
+          } else {
+              delete keiElement.monitored;
+          }
+      } else if (keiElement) {
+          extensionElements.get('values').splice(extensionElements.get('values').indexOf(keiElement), 1);
       }
-    }
   }
+}
+
 
   getContextPadEntries(element) {
     const {
@@ -260,8 +307,8 @@ export default class CustomContextPad {
 
           const position = assign(getReplaceMenuPosition(element), {
             cursor: { x: event.x, y: event.y }
-          //print position for debugging
-       
+            //print position for debugging
+
           });
           console.log('Position:', position);
           popupMenu.open(element, 'bpmn-replace', position, {
