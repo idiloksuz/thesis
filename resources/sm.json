@@ -7,23 +7,6 @@
   },
   "types": [
     {
-      "name": "AnalyzedNode",
-      "extends": [
-        "bpmn:FlowNode"
-      ]
-    },
-    {
-      "name": "Task",
-      "superClass": ["bpmn:Task"],
-      "properties": [
-        {
-          "name": "kei",
-          "isAttr": true,
-          "type": "String"
-        }
-      ]
-    },
-    {
       "name": "Kei",
       "superClass": ["Element"],
       "properties": [
@@ -31,6 +14,11 @@
           "name": "value",
           "isAttr": true,
           "type": "String"
+        },
+        {
+          "name": "monitored",
+          "isAttr": true,
+          "type": "Boolean"
         }
       ]
     },
@@ -47,6 +35,11 @@
           "name": "unit",
           "isAttr": true,
           "type": "String"
+        },
+        {
+          "name": "monitored",
+          "isAttr": true,
+          "type": "Boolean"
         }
       ]
     },
@@ -63,6 +56,11 @@
           "name": "unit",
           "isAttr": true,
           "type": "String"
+        },
+        {
+          "name": "monitored",
+          "isAttr": true,
+          "type": "Boolean"
         }
       ]
     },
@@ -79,6 +77,11 @@
           "name": "unit",
           "isAttr": true,
           "type": "String"
+        },
+        {
+          "name": "monitored",
+          "isAttr": true,
+          "type": "Boolean"
         }
       ]
     },
@@ -94,7 +97,13 @@
         {
           "name": "unit",
           "isAttr": true,
-          "type": "String"        }
+          "type": "String"
+        },
+        {
+          "name": "monitored",
+          "isAttr": true,
+          "type": "Boolean"
+        }
       ]
     },
     {
@@ -110,6 +119,11 @@
           "name": "unit",
           "isAttr": true,
           "type": "String"
+        },
+        {
+          "name": "monitored",
+          "isAttr": true,
+          "type": "Boolean"
         }
       ]
     },
@@ -126,6 +140,11 @@
           "name": "unit",
           "isAttr": true,
           "type": "String"
+        },
+        {
+          "name": "monitored",
+          "isAttr": true,
+          "type": "Boolean"
         }
       ]
     },
@@ -142,6 +161,11 @@
           "name": "unit",
           "isAttr": true,
           "type": "String"
+        },
+        {
+          "name": "monitored",
+          "isAttr": true,
+          "type": "Boolean"
         }
       ]
     },
@@ -158,6 +182,11 @@
           "name": "unit",
           "isAttr": true,
           "type": "String"
+        },
+        {
+          "name": "monitored",
+          "isAttr": true,
+          "type": "Boolean"
         }
       ]
     },
@@ -174,21 +203,11 @@
           "name": "unit",
           "isAttr": true,
           "type": "String"
-        }
-      ]
-    },
-    {
-      "name": "Comment",
-      "properties": [
-        {
-          "name": "author",
-          "isAttr": true,
-          "type": "String"
         },
         {
-          "name": "text",
-          "isBody": true,
-          "type": "String"
+          "name": "monitored",
+          "isAttr": true,
+          "type": "Boolean"
         }
       ]
     }
