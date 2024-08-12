@@ -33,15 +33,39 @@ export default class CustomContextPad {
 
     contextPad.registerProvider(this);
 
-    // Listen for the replace event to handle KEI property preservation
-    eventBus.on('replace', (event) => {
-      const { oldShape, newShape } = event.context;
-      //print the old and new shapes for debugging
-      console.log('Old shape:', oldShape);
-      this.preserveKEIProperties(oldShape, newShape);
+    eventBus.on('commandStack.shape.replace.postExecute', (event) => {
+      const { context } = event;
+      const { newShape } = context;
+    
+      // Reapply KEI properties after the shape is replaced
+      const keiProperties = this.extractKEIProperties(context.oldShape.businessObject);
+      assign(newShape.businessObject, keiProperties);
+    
+      // Ensure KEI extension elements are correctly handled
+      this.ensureKEIExtensionElements(newShape.businessObject, keiProperties);
+    
+      // Trigger re-rendering of the KEI properties
+      this.eventBus.fire('elements.changed', { elements: [newShape] });
     });
   }
+  // Add the extractKEIProperties method
 
+  extractKEIProperties(businessObject) {
+    console.log('businessObjectMMMMEEEEE', businessObject);
+    return {
+      kei: businessObject.kei || 'defaultKEI',
+      energyConsumption: businessObject.energyConsumption || 0,
+      renewableEnergy: businessObject.renewableEnergy || 0,
+      nonRenewableEnergy: businessObject.nonRenewableEnergy || 0,
+      indoorEnergy: businessObject.indoorEnergy || 0,
+      transportationEnergy: businessObject.transportationEnergy || 0,
+      singleSourceOfEnergy: businessObject.singleSourceOfEnergy || 0,
+      carbonDioxideEmissions: businessObject.carbonDioxideEmissions || 0,
+      waterUsage: businessObject.waterUsage || 0,
+      wasteGeneration: businessObject.wasteGeneration || 0,
+      monitored: businessObject.monitored || false
+    };
+  }
   setBpmnModeler(bpmnModeler) {
     this.bpmnModeler = bpmnModeler;
   }
@@ -282,8 +306,6 @@ export default class CustomContextPad {
       title: translate('Change element'),
       action: {
         click: (event, element) => {
-          console.log('event:', event);
-          console.log('Replacing element');
           const businessObject = element.businessObject;
 
           // Preserve KEI properties before replacement
@@ -306,7 +328,6 @@ export default class CustomContextPad {
             //print position for debugging
 
           });
-          console.log('Position:', position);
           popupMenu.open(element, 'bpmn-replace', position, {
             title: translate('Change element'),
             width: 300,

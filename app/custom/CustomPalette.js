@@ -1,3 +1,6 @@
+import { assign } from 'min-dash';
+import { is } from 'bpmn-js/lib/util/ModelUtil';
+
 export default class CustomPalette {
   constructor(bpmnFactory, create, elementFactory, palette, translate, modeling, elementRegistry, eventBus) {
     this.bpmnFactory = bpmnFactory;
@@ -13,13 +16,7 @@ export default class CustomPalette {
 
   getPaletteEntries(element) {
     const {
-      bpmnFactory,
-      create,
-      elementFactory,
-      translate,
-      modeling,
-      elementRegistry,
-      eventBus
+      translate
     } = this;
 
     // Define custom palette entries
@@ -29,9 +26,6 @@ export default class CustomPalette {
         className: 'bpmn-icon-screw-wrench',
         title: translate('Change element'),
         action: {
-          dragstart: function (event) {
-            // Handle dragstart if necessary
-          },
           click: (event) => {
             const shape = element;
             const newType = 'bpmn:ServiceTask'; // Specify the new type
@@ -48,45 +42,50 @@ export default class CustomPalette {
 
   replaceElement(element, newType) {
     const businessObject = element.businessObject;
-
-    // Store KEI properties
-    const keiProperties = {
-      kei: businessObject.kei,
-      energyConsumption: businessObject.energyConsumption,
-      renewableEnergy: businessObject.renewableEnergy,
-      nonRenewableEnergy: businessObject.nonRenewableEnergy,
-      indoorEnergy: businessObject.indoorEnergy,
-      transportationEnergy: businessObject.transportationEnergy,
-      singleSourceOfEnergy: businessObject.singleSourceOfEnergy,
-      carbonDioxideEmissions: businessObject.carbonDioxideEmissions,
-      waterUsage: businessObject.waterUsage,
-      wasteGeneration: businessObject.wasteGeneration,
-      monitored: businessObject.monitored
-    };
-
+  
+    // Extract KEI properties from the current element
+    const keiProperties = this.extractKEIProperties(businessObject);
+  
     console.log('Replacing element, storing KEI Properties:', keiProperties);
-
+  
     // Create a new element of the specified type
     const newElement = this.elementFactory.createShape({
       type: newType,
       businessObject: this.bpmnFactory.create(newType)
     });
-
-    // Assign KEI properties to the new element's businessObject
-    assign(newElement.businessObject, keiProperties);
-
-    // Replace the old element with the new element
-    this.modeling.replaceShape(element, newElement);
-
-    // Ensure KEI extension elements are correctly handled during the replacement
-    this.ensureKEIExtensionElements(newElement.businessObject, keiProperties);
-
-    // Fire element changed event
-    this.eventBus.fire('element.changed', { element: newElement });
-  }   
   
+    // Apply the KEI properties to the new element's businessObject
+    assign(newElement.businessObject, keiProperties);
+  
+    // Replace the old element with the new element
+    const replacedElement = this.modeling.replaceShape(element, newElement);
+  
+    // Ensure KEI extension elements are correctly handled during the replacement
+    this.ensureKEIExtensionElements(replacedElement.businessObject, keiProperties);
+  
+    // Fire element changed event to trigger the rendering of the KEI
+    this.eventBus.fire('elements.changed', { elements: [replacedElement] });
+  }
+  
+  extractKEIProperties(businessObject) {
+    return {
+      kei: businessObject.kei || 'defaultKEI',
+      energyConsumption: businessObject.energyConsumption || 0,
+      renewableEnergy: businessObject.renewableEnergy || 0,
+      nonRenewableEnergy: businessObject.nonRenewableEnergy || 0,
+      indoorEnergy: businessObject.indoorEnergy || 0,
+      transportationEnergy: businessObject.transportationEnergy || 0,
+      singleSourceOfEnergy: businessObject.singleSourceOfEnergy || 0,
+      carbonDioxideEmissions: businessObject.carbonDioxideEmissions || 0,
+      waterUsage: businessObject.waterUsage || 0,
+      wasteGeneration: businessObject.wasteGeneration || 0,
+      monitored: businessObject.monitored || false
+    };
+  }
+  
+
   ensureKEIExtensionElements(businessObject, keiProperties) {
-    const moddle = this.bpmnModeler.get('moddle');
+    const moddle = this.bpmnFactory._modeler.get('moddle');
     let extensionElements = businessObject.extensionElements;
 
     // Ensure that extensionElements exists on the businessObject
@@ -135,28 +134,28 @@ export default class CustomPalette {
   handleKEIElement(keiType, elementType, businessObject, property, unit, monitored, measured, moddle, extensionElements) {
     if (businessObject.kei === keiType) {
       let keiElement = extensionElements.get('values').find(el => el.$type === elementType);
-  
+
       const keiValue = measured ? businessObject[property] : null;
       const shouldCreateOrUpdate = keiValue || unit || monitored;
-  
+
       if (shouldCreateOrUpdate) {
         if (!keiElement) {
           keiElement = moddle.create(elementType, {});
           extensionElements.get('values').push(keiElement);
         }
-  
+
         if (keiValue) {
           keiElement.value = keiValue;
         } else {
           delete keiElement.value;
         }
-  
+
         if (unit) {
           keiElement.unit = unit;
         } else {
           delete keiElement.unit;
         }
-  
+
         if (monitored) {
           keiElement.monitored = 'true';
         } else {
@@ -167,7 +166,6 @@ export default class CustomPalette {
       }
     }
   }
-  
 }
 
 CustomPalette.$inject = [
