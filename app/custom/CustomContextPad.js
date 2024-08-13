@@ -39,6 +39,7 @@ export default class CustomContextPad {
     
       // Reapply KEI properties after the shape is replaced
       const keiProperties = this.extractKEIProperties(context.oldShape.businessObject);
+      console.log('Replaced shape, reapplying KEI properties:', keiProperties);
       assign(newShape.businessObject, keiProperties);
     
       // Ensure KEI extension elements are correctly handled
@@ -48,10 +49,8 @@ export default class CustomContextPad {
       this.eventBus.fire('elements.changed', { elements: [newShape] });
     });
   }
-  // Add the extractKEIProperties method
 
   extractKEIProperties(businessObject) {
-    console.log('businessObjectMMMMEEEEE', businessObject);
     return {
       kei: businessObject.kei || 'defaultKEI',
       energyConsumption: businessObject.energyConsumption || 0,
@@ -66,6 +65,7 @@ export default class CustomContextPad {
       monitored: businessObject.monitored || false
     };
   }
+
   setBpmnModeler(bpmnModeler) {
     this.bpmnModeler = bpmnModeler;
   }
@@ -88,89 +88,80 @@ export default class CustomContextPad {
       monitored: oldBusinessObject.monitored
     };
 
-    //print the preserved KEI properties for debugging
-    console.log('Preserved KEI properties:', keiProperties);
-
     assign(newBusinessObject, keiProperties);
     this.ensureKEIExtensionElements(newBusinessObject, keiProperties);
     this.modeling.updateProperties(newShape, { businessObject: newBusinessObject });
     this.eventBus.fire('element.changed', { element: newShape });
 
-    // Log the preserved KEI properties for debugging
     console.log('Preserved KEI properties:', keiProperties);
   }
+
   ensureKEIExtensionElements(businessObject, keiProperties) {
     const moddle = this.bpmnModeler.get('moddle');
     let extensionElements = businessObject.extensionElements;
 
-    // Ensure that extensionElements exists on the businessObject
     if (!extensionElements) {
-      extensionElements = moddle.create('bpmn:ExtensionElements');
-      businessObject.extensionElements = extensionElements;
+        extensionElements = moddle.create('bpmn:ExtensionElements');
+        businessObject.extensionElements = extensionElements;
     }
 
-    // Initialize the values array if it doesn't exist
     if (!extensionElements.values) {
-      extensionElements.values = [];
+        extensionElements.values = [];
     }
 
-    // Remove all existing KEI-specific elements before adding the new one
     extensionElements.values = extensionElements.values.filter(el => el.$type === 'sm:Kei' || !el.$type.startsWith('sm:'));
 
-    // Ensure the KEI main element exists or create it
     let keiElement = extensionElements.get('values').find(el => el.$type === 'sm:Kei');
     if (!keiElement) {
-      keiElement = moddle.create('sm:Kei', { value: keiProperties.kei });
-      extensionElements.get('values').push(keiElement);
+        keiElement = moddle.create('sm:Kei', { value: keiProperties.kei });
+        extensionElements.get('values').push(keiElement);
+        console.log('Created KEI element:', keiElement);
     } else {
-      keiElement.value = keiProperties.kei;
+        keiElement.value = keiProperties.kei;
     }
 
-    // Update the monitored attribute if needed
     if (keiProperties.monitored) {
-      keiElement.monitored = 'true';
+        keiElement.monitored = 'true';
     } else {
-      delete keiElement.monitored;
+        delete keiElement.monitored;
     }
 
-    // Handle specific KEI elements based on the keiProperties
-    const measured = keiProperties.measured;
-    this.handleKEIElement('energyConsumption', 'sm:energyConsumption', businessObject, 'energyConsumption', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('renewableEnergy', 'sm:renewableEnergy', businessObject, 'renewableEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('nonRenewableEnergy', 'sm:nonRenewableEnergy', businessObject, 'nonRenewableEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('indoorEnergy', 'sm:indoorEnergy', businessObject, 'indoorEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('transportationEnergy', 'sm:transportationEnergy', businessObject, 'transportationEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('[singleSourceOfEnergy]', 'sm:singleSourceOfEnergy', businessObject, 'singleSourceOfEnergy', 'kWh', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('carbonDioxideEmissions', 'sm:carbonDioxideEmissions', businessObject, 'carbonDioxideEmissions', 'kg', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('waterUsage', 'sm:waterUsage', businessObject, 'waterUsage', 'liters', keiProperties.monitored, measured, moddle, extensionElements);
-    this.handleKEIElement('wasteGeneration', 'sm:wasteGeneration', businessObject, 'wasteGeneration', 'kg', keiProperties.monitored, measured, moddle, extensionElements);
+    // Ensure values are stored even if only measured
+    this.handleKEIElement('energyConsumption', 'sm:energyConsumption', businessObject, 'energyConsumption', 'kWh', keiProperties.monitored, keiProperties.energyConsumption, moddle, extensionElements);
+    this.handleKEIElement('renewableEnergy', 'sm:renewableEnergy', businessObject, 'renewableEnergy', 'kWh', keiProperties.monitored, keiProperties.renewableEnergy, moddle, extensionElements);
+    this.handleKEIElement('nonRenewableEnergy', 'sm:nonRenewableEnergy', businessObject, 'nonRenewableEnergy', 'kWh', keiProperties.monitored, keiProperties.nonRenewableEnergy, moddle, extensionElements);
+    this.handleKEIElement('indoorEnergy', 'sm:indoorEnergy', businessObject, 'indoorEnergy', 'kWh', keiProperties.monitored, keiProperties.indoorEnergy, moddle, extensionElements);
+    this.handleKEIElement('transportationEnergy', 'sm:transportationEnergy', businessObject, 'transportationEnergy', 'kWh', keiProperties.monitored, keiProperties.transportationEnergy, moddle, extensionElements);
+    this.handleKEIElement('[singleSourceOfEnergy]', 'sm:singleSourceOfEnergy', businessObject, 'singleSourceOfEnergy', 'kWh', keiProperties.monitored, keiProperties.singleSourceOfEnergy, moddle, extensionElements);
+    this.handleKEIElement('carbonDioxideEmissions', 'sm:carbonDioxideEmissions', businessObject, 'carbonDioxideEmissions', 'kg', keiProperties.monitored, keiProperties.carbonDioxideEmissions, moddle, extensionElements);
+    this.handleKEIElement('waterUsage', 'sm:waterUsage', businessObject, 'waterUsage', 'liters', keiProperties.monitored, keiProperties.waterUsage, moddle, extensionElements);
+    this.handleKEIElement('wasteGeneration', 'sm:wasteGeneration', businessObject, 'wasteGeneration', 'kg', keiProperties.monitored, keiProperties.wasteGeneration, moddle, extensionElements);
+    console.log('Energy:', keiProperties.energyConsumption);
   }
-
-  handleKEIElement(keiType, elementType, businessObject, property, unit, monitored, measured, moddle, extensionElements) {
+  handleKEIElement(keiType, elementType, businessObject, property, unit, monitored, measuredValue, moddle, extensionElements) {
     if (businessObject.kei === keiType) {
       let keiElement = extensionElements.get('values').find(el => el.$type === elementType);
-
-      const keiValue = measured ? businessObject[property] : null;
-      const shouldCreateOrUpdate = keiValue || unit || monitored;
-
+  
+      const shouldCreateOrUpdate = measuredValue || unit || monitored || (measuredValue === 0);
+  
       if (shouldCreateOrUpdate) {
         if (!keiElement) {
           keiElement = moddle.create(elementType, {});
           extensionElements.get('values').push(keiElement);
         }
-
-        if (keiValue) {
-          keiElement.value = keiValue;
+  
+        if (measuredValue || measuredValue === 0) {  // Ensure that even 0 is stored
+          keiElement.value = measuredValue; // This line should correctly set the value
         } else {
           delete keiElement.value;
         }
-
+  
         if (unit) {
           keiElement.unit = unit;
         } else {
           delete keiElement.unit;
         }
-
+  
         if (monitored) {
           keiElement.monitored = 'true';
         } else {
@@ -181,23 +172,13 @@ export default class CustomContextPad {
       }
     }
   }
-
+  
 
   getContextPadEntries(element) {
-    const {
-      autoPlace,
-      bpmnFactory,
-      create,
-      elementFactory,
-      translate,
-      eventBus,
-      bpmnModeler,
-      modeling,
-      elementRegistry,
-      popupMenu
-    } = this;
+    const { autoPlace, bpmnFactory, create, elementFactory, translate, eventBus, bpmnModeler, modeling, elementRegistry, popupMenu } = this;
 
-    const actions = {}; const editTaskKEI = (event, element) => {
+    const actions = {}; 
+    const editTaskKEI = (event, element) => {
       const businessObject = element.businessObject;
       const menu = document.createElement('div');
       menu.className = 'custom-kei-menu';
@@ -222,44 +203,52 @@ export default class CustomContextPad {
             businessObject.measured = measured;
             businessObject.monitored = monitored;
 
-            this.ensureKEIExtensionElements(businessObject, { kei, monitored, measured });
-            eventBus.fire('element.changed', { element });
             if (measured) {
+              let keiElement;
               if (kei === 'energyConsumption') {
                 const kwh = prompt('Enter the number of kWh:');
                 businessObject.energyConsumption = kwh;
+                keiElement = { type: 'sm:energyConsumption', value: kwh };
               } else if (kei === 'renewableEnergy') {
-                const source = prompt('Enter the number of kWh for :');
+                const source = prompt('Enter the number of kWh for renewable energy:');
                 businessObject.renewableEnergy = source;
+                keiElement = { type: 'sm:renewableEnergy', value: source };
               } else if (kei === 'nonRenewableEnergy') {
                 const source = prompt('Enter the number of kWh for non-renewable energy:');
                 businessObject.nonRenewableEnergy = source;
+                keiElement = { type: 'sm:nonRenewableEnergy', value: source };
               } else if (kei === 'indoorEnergy') {
                 const usage = prompt('Enter the number of kWh for indoor energy usage:');
                 businessObject.indoorEnergy = usage;
+                keiElement = { type: 'sm:indoorEnergy', value: usage };
               } else if (kei === 'transportationEnergy') {
                 const usage = prompt('Enter the number of kWh for transportation energy usage:');
                 businessObject.transportationEnergy = usage;
+                keiElement = { type: 'sm:transportationEnergy', value: usage };
               } else if (kei === '[singleSourceOfEnergy]') {
                 const source = prompt('Enter the number of kWh for single source of energy:');
                 businessObject.singleSourceOfEnergy = source;
+                keiElement = { type: 'sm:singleSourceOfEnergy', value: source };
               } else if (kei === 'carbonDioxideEmissions') {
                 const kgs = prompt('Enter the number of kilograms of CO2:');
                 businessObject.carbonDioxideEmissions = kgs;
+                keiElement = { type: 'sm:carbonDioxideEmissions', value: kgs };
               } else if (kei === 'waterUsage') {
                 const liters = prompt('Enter the number of liters:');
                 businessObject.waterUsage = liters;
+                keiElement = { type: 'sm:waterUsage', value: liters };
               } else if (kei === 'wasteGeneration') {
                 const kgs = prompt('Enter the number of kilograms:');
                 businessObject.wasteGeneration = kgs;
+                keiElement = { type: 'sm:wasteGeneration', value: kgs };
+              }
+
+              if (keiElement) {
+                // Ensure KEI values are added to extension elements
+                this.ensureKEIExtensionElements(businessObject, keiElement);
               }
             }
 
-
-            if (monitored) {
-              businessObject.monitored = true;
-            }
-            businessObject.kei = kei;
             this.ensureKEIExtensionElements(businessObject, { kei, monitored });
             eventBus.fire('element.changed', { element });
             document.body.removeChild(menu);
@@ -287,7 +276,6 @@ export default class CustomContextPad {
         }, { once: true });
       }, 100);
     }
-
 
     actions['edit.kei-task'] = {
       group: 'edit',
@@ -325,22 +313,18 @@ export default class CustomContextPad {
 
           const position = assign(getReplaceMenuPosition(element), {
             cursor: { x: event.x, y: event.y }
-            //print position for debugging
-
           });
+
           popupMenu.open(element, 'bpmn-replace', position, {
             title: translate('Change element'),
             width: 300,
             search: true
           });
-          //print element
-          console.log('Elementtype:', element);
-          // Listen for the replace event and reapply KEI properties to the new element
+
           const onReplace = ({ context }) => {
             const { newShape } = context;
             const newBusinessObject = newShape.businessObject;
             assign(newBusinessObject, keiProperties);
-            console.log('New business object:', newBusinessObject);
             this.ensureKEIExtensionElements(newBusinessObject, keiProperties);
             this.modeling.updateProperties(newShape, { businessObject: newBusinessObject });
             this.eventBus.off('replace', onReplace); // Unsubscribe after handling

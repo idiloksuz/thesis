@@ -29,34 +29,6 @@ export default class CustomRenderer extends BaseRenderer {
     super(eventBus, HIGH_PRIORITY);
     this.bpmnRenderer = bpmnRenderer;
     this.customContextPad = customContextPad; // Store the CustomContextPad instance
-
-    eventBus.on('elements.changed', (event) => {
-      event.elements.forEach(element => {
-        if (this.canRender(element)) {
-          const gfx = this.getGraphics(element);
-          this.drawKEI(element, gfx);
-          console.log('Element changed and KEI rendered:', element);
-        }
-      });
-    });
-    
-    // eventBus.on('commandStack.shape.replace.postExecute', (event) => {
-    //   const { context } = event;
-    //   const { newShape } = context;
-    
-    //   // Reapply KEI properties after the shape is replaced
-    //   console.log("this.customcontextpad", this.customContextPad);
-    //   const keiProperties = this.customContextPad.extractKEIProperties(context.oldShape.businessObject);
-    //   assign(newShape.businessObject, keiProperties);
-    
-    //   // Ensure KEI extension elements are correctly handled
-    //   this.customContextPad.ensureKEIExtensionElements(newShape.businessObject, keiProperties);
-    
-    //   // Trigger re-rendering of the KEI properties
-    //   this.eventBus.fire('elements.changed', { elements: [newShape] });
-    // });
-    
-    
   }
 
   canRender(element) {
