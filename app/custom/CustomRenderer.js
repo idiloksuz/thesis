@@ -40,7 +40,6 @@ export default class CustomRenderer extends BaseRenderer {
     this.drawKEI(element, parentNode);
     return shape;
   }
-
   drawKEI(element, parentNode) {
     if (!parentNode) {
         console.error('parentNode is undefined for element:', element);
@@ -50,13 +49,13 @@ export default class CustomRenderer extends BaseRenderer {
     const shapeHeight = element.height;
     const businessObject = element.businessObject;
     const kei = businessObject.kei;
-    const keiValue = this.getKEIValue(businessObject, kei);
+    const keiValue = this.getKEIValue(businessObject, kei); // Retrieve the KEI value
 
     if (kei) {
         const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
         img.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', this.getKEIImagePath(kei));
         img.setAttributeNS(null, 'x', 0);
-        img.setAttributeNS(null, 'y', shapeHeight + 5);
+        img.setAttributeNS(null, 'y', -30); // Adjust this value to position the icon above the shape
         img.setAttributeNS(null, 'width', 24);
         img.setAttributeNS(null, 'height', 24);
         parentNode.appendChild(img);
@@ -64,7 +63,7 @@ export default class CustomRenderer extends BaseRenderer {
         const text = svgCreate('text');
         svgAttr(text, {
             x: 30,
-            y: shapeHeight + 20,
+            y: -15, // Position above the shape
             'font-size': '14px',
             fill: '#000000',
             opacity: 1,
@@ -77,7 +76,7 @@ export default class CustomRenderer extends BaseRenderer {
             const monitoredText = svgCreate('text');
             svgAttr(monitoredText, {
                 x: 30,
-                y: shapeHeight + 40, // Position it below the KEI value
+                y: -5, // Position above the shape, below the KEI value
                 'font-size': '12px',
                 fill: '#FF0000', // Red color for visibility
                 opacity: 1,
@@ -119,29 +118,49 @@ export default class CustomRenderer extends BaseRenderer {
   }
 
   getKEIValue(businessObject, kei) {
+    let value = businessObject[kei];
+    let unit;
+
     switch (kei) {
-      case 'energyConsumption':
-        return `${businessObject.energyConsumption} kWh`;
-      case 'renewableEnergy':
-        return `${businessObject.renewableEnergy} kWh`;
-      case 'nonRenewableEnergy':
-        return `${businessObject.nonRenewableEnergy} kWh`;
-      case 'indoorEnergy':
-        return `${businessObject.indoorEnergy} kWh`;
-      case 'transportationEnergy':
-        return `${businessObject.transportationEnergy} kWh`;
-      case '[singleSourceOfEnergy]':
-        return `${businessObject.singleSourceOfEnergy} kWh`;
-      case 'carbondioxideEmissions':
-        return `${businessObject.carbonDioxideEmissions} kg CO2`;
-      case 'waterUsage':
-        return `${businessObject.waterUsage} liters`;
-      case 'wasteGeneration':
-        return `${businessObject.wasteGeneration} kg`;
-      default:
-        return '';
+        case 'energyConsumption':
+         
+            unit = 'kWh';
+            break;
+        case 'renewableEnergy':
+            unit = 'kWh';
+            break;
+        case 'nonRenewableEnergy':
+            unit = 'kWh';
+            break;
+        case 'indoorEnergy':
+            unit = 'kWh';
+            break;
+        case 'transportationEnergy':
+            unit = 'kWh';
+            break;
+        case '[singleSourceOfEnergy]':
+            unit = 'kWh';
+            break;
+        case 'carbonDioxideEmissions':
+            unit = 'kg CO2';
+            break;
+        case 'waterUsage':
+            unit = 'liters';
+            break;
+        case 'wasteGeneration':
+            unit = 'kg';
+            break;
+        default:
+            return '';
+    }  
+
+    // Return "undefined kWh" if measured but no value is given
+    if (businessObject.measured && (value === undefined || value === null)) {
+        return `undefined ${unit}`;
     }
-  }
+
+    return `${value || 'undefined'} ${unit}`;
+}
 
   getGraphics(element) {
     return element && element.gfx;
