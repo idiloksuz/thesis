@@ -33,8 +33,6 @@ export default class CustomRenderer extends BaseRenderer {
 
   canRender(element) {
     const businessObject = element.businessObject;
-    console.log('businessObject', businessObject);
-    console.log('businessObject.kei', businessObject.kei);
     return !element.labelTarget && businessObject && businessObject.kei;
   }
 
