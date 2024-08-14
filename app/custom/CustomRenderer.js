@@ -1,5 +1,4 @@
 import BaseRenderer from 'diagram-js/lib/draw/BaseRenderer';
-import CustomContextPad from './CustomContextPad';
 
 import {
   append as svgAppend,
@@ -44,35 +43,50 @@ export default class CustomRenderer extends BaseRenderer {
 
   drawKEI(element, parentNode) {
     if (!parentNode) {
-      console.error('parentNode is undefined for element:', element);
-      return;
+        console.error('parentNode is undefined for element:', element);
+        return;
     }
 
     const shapeHeight = element.height;
-    const kei = element.businessObject.kei;
-    const keiValue = this.getKEIValue(element.businessObject, kei);
+    const businessObject = element.businessObject;
+    const kei = businessObject.kei;
+    const keiValue = this.getKEIValue(businessObject, kei);
 
     if (kei) {
-      const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-      img.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', this.getKEIImagePath(kei));
-      img.setAttributeNS(null, 'x', 0);
-      img.setAttributeNS(null, 'y', shapeHeight + 5);
-      img.setAttributeNS(null, 'width', 24);
-      img.setAttributeNS(null, 'height', 24);
-      parentNode.appendChild(img);
+        const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+        img.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', this.getKEIImagePath(kei));
+        img.setAttributeNS(null, 'x', 0);
+        img.setAttributeNS(null, 'y', shapeHeight + 5);
+        img.setAttributeNS(null, 'width', 24);
+        img.setAttributeNS(null, 'height', 24);
+        parentNode.appendChild(img);
 
-      const text = svgCreate('text');
-      svgAttr(text, {
-        x: 30,
-        y: shapeHeight + 20,
-        'font-size': '14px',
-        fill: '#000000',
-        opacity: 1,
-      });
-      text.textContent = keiValue;
-      svgAppend(parentNode, text);
+        const text = svgCreate('text');
+        svgAttr(text, {
+            x: 30,
+            y: shapeHeight + 20,
+            'font-size': '14px',
+            fill: '#000000',
+            opacity: 1,
+        });
+        text.textContent = keiValue;
+        svgAppend(parentNode, text);
+
+        // Add monitored status
+        if (businessObject.monitored) {
+            const monitoredText = svgCreate('text');
+            svgAttr(monitoredText, {
+                x: 30,
+                y: shapeHeight + 40, // Position it below the KEI value
+                'font-size': '12px',
+                fill: '#FF0000', // Red color for visibility
+                opacity: 1,
+            });
+            monitoredText.textContent = 'Monitored';
+            svgAppend(parentNode, monitoredText);
+        }
     }
-  }
+}
 
   getShapePath(shape) {
     if (is(shape, 'bpmn:Task') || is(shape, 'bpmn:ServiceTask') || is(shape, 'bpmn:UserTask') || is(shape, 'bpmn:ManualTask') || is(shape, 'bpmn:BusinessRuleTask')) {
@@ -135,21 +149,3 @@ export default class CustomRenderer extends BaseRenderer {
 }
 
 CustomRenderer.$inject = ['eventBus', 'bpmnRenderer'];
-
-
-function drawRect(parentNode, width, height, borderRadius, color) {
-  const rect = svgCreate('rect');
-
-  svgAttr(rect, {
-    width: width,
-    height: height,
-    rx: borderRadius,
-    ry: borderRadius,
-    stroke: color,
-    strokeWidth: 2,
-    fill: color
-  });
-
-  svgAppend(parentNode, rect);
-  return rect;
-}
