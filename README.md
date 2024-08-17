@@ -1,4 +1,3 @@
-> This example combines all aspects of our [:notebook: custom elements guide](https://github.com/bpmn-io/bpmn-js-examples/tree/master/custom-elements).
 
 
 ## About
