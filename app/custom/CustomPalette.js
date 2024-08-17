@@ -26,7 +26,7 @@ export default class CustomPalette {
         className: 'bpmn-icon-screw-wrench',
         title: translate('Change element'),
         action: {
-          click: (event) => {
+           click: (event) => {
             const shape = element;
             const newType = 'bpmn:ServiceTask'; // Specify the new type
 
@@ -42,7 +42,7 @@ export default class CustomPalette {
 
   replaceElement(element, newType) {
     const businessObject = element.businessObject;
-  
+    console.log('DOES THIS WORK:');
     // Extract KEI properties from the current element
     const keiProperties = this.extractKEIProperties(businessObject);
   

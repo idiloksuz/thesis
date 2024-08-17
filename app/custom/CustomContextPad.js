@@ -150,10 +150,6 @@ export default class CustomContextPad {
       if (measuredValue !== undefined && measuredValue !== null) {
         keiElement.value = measuredValue.toString();  // Ensure the value is always a string
       } 
-      // else if (keiElement.value === undefined || keiElement.value === null) {
-      //   keiElement.value = '';  // Ensure the element exists with an empty value
-      // }
-
       // Set or update the unit and monitored attributes
       if (unit) {
         keiElement.unit = unit;
