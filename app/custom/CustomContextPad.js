@@ -8,7 +8,6 @@ const KEI_CATEGORIES = {
     "nonRenewableEnergy",
     "indoorEnergy",
     "transportationEnergy",
-    "[singleSourceOfEnergy]"
   ],
   Waste: ["wasteGeneration"],
   Water: ["waterUsage"],
@@ -56,7 +55,6 @@ export default class CustomContextPad {
       nonRenewableEnergy: businessObject.nonRenewableEnergy || undefined,
       indoorEnergy: businessObject.indoorEnergy || undefined,
       transportationEnergy: businessObject.transportationEnergy || undefined,
-      singleSourceOfEnergy: businessObject.singleSourceOfEnergy || undefined,
       carbonDioxideEmissions: businessObject.carbonDioxideEmissions || undefined,
       waterUsage: businessObject.waterUsage || undefined,
       wasteGeneration: businessObject.wasteGeneration || undefined,
@@ -79,7 +77,6 @@ export default class CustomContextPad {
       nonRenewableEnergy: oldBusinessObject.nonRenewableEnergy,
       indoorEnergy: oldBusinessObject.indoorEnergy,
       transportationEnergy: oldBusinessObject.transportationEnergy,
-      singleSourceOfEnergy: oldBusinessObject.singleSourceOfEnergy,
       carbonDioxideEmissions: oldBusinessObject.carbonDioxideEmissions,
       waterUsage: oldBusinessObject.waterUsage,
       wasteGeneration: oldBusinessObject.wasteGeneration,
@@ -134,7 +131,7 @@ export default class CustomContextPad {
     this.handleKEIElement('carbonDioxideEmissions', 'sm:carbonDioxideEmissions', businessObject, 'carbonDioxideEmissions', 'kg', keiProperties.monitored, keiProperties.carbonDioxideEmissions, moddle, extensionElements);
     this.handleKEIElement('waterUsage', 'sm:waterUsage', businessObject, 'waterUsage', 'liters', keiProperties.monitored, keiProperties.waterUsage, moddle, extensionElements);
     this.handleKEIElement('wasteGeneration', 'sm:wasteGeneration', businessObject, 'wasteGeneration', 'kg', keiProperties.monitored, keiProperties.wasteGeneration, moddle, extensionElements);
-}
+  }
 
   handleKEIElement(keiType, elementType, businessObject, property, unit, monitored, measuredValue, moddle, extensionElements) {
     if (businessObject.kei === keiType) {
@@ -165,7 +162,6 @@ export default class CustomContextPad {
     }
   }
 
-
   getContextPadEntries(element) {
     const { autoPlace, bpmnFactory, create, elementFactory, translate, eventBus, bpmnModeler, modeling, elementRegistry, popupMenu } = this;
 
@@ -186,12 +182,22 @@ export default class CustomContextPad {
         KEI_CATEGORIES[category].forEach(kei => {
           const menuItem = document.createElement('div');
           menuItem.className = 'custom-kei-menu-item';
-          menuItem.innerText = kei;
+
+          // Add the image based on KEI type
+          const keiImage = document.createElement('img');
+          keiImage.className = 'kei-image';
+          keiImage.src = getKEIImageSrc(kei);
+          keiImage.alt = kei; // Set alt attribute for accessibility
+          keiImage.style.width = '20px'; // Set width
+          keiImage.style.marginRight = '8px'; // Add some space between image and text
+
+          menuItem.appendChild(keiImage); // Append the image to the menu item
+          menuItem.innerHTML += kei; // Add the KEI name next to the image
+
           menuItem.addEventListener('click', () => {
             const measured = confirm('Is the task measured?');
             const monitored = confirm('Is the task monitored?');
             let keiElementValue = undefined;
-
 
             businessObject.kei = kei;
             businessObject.measured = measured;
@@ -200,14 +206,16 @@ export default class CustomContextPad {
             if (measured) {
               let input = prompt(`Enter the ${kei} value (e.g., kWh):`);
               if (input !== null && input !== '') {
-                  keiElementValue = input;
-                  businessObject[kei] = keiElementValue; // Store the value in the businessObject
+                keiElementValue = input;
+                businessObject[kei] = keiElementValue; // Store the value in the businessObject
               }
-          }
+            }
+
             this.ensureKEIExtensionElements(businessObject, { kei, monitored, [kei]: keiElementValue });
             eventBus.fire('element.changed', { element });
             document.body.removeChild(menu);
           });
+
           subMenu.appendChild(menuItem);
         });
 
@@ -230,7 +238,7 @@ export default class CustomContextPad {
           }
         }, { once: true });
       }, 100);
-    }
+    };
 
     actions['edit.kei-task'] = {
       group: 'edit',
@@ -316,6 +324,30 @@ function getReplaceMenuPosition(element) {
   };
 }
 
+// Helper function to get the image source based on KEI type
+function getKEIImageSrc(kei) {
+  switch (kei) {
+    case 'energyConsumption':
+      return './energyConsumption.jpg';
+    case 'renewableEnergy':
+      return './renewableEnergy.jpg';
+    case 'nonRenewableEnergy':
+      return './nonRenewableEnergy.jpg';
+    case 'indoorEnergy':
+      return './indoorEnergy.jpg';
+    case 'transportationEnergy':
+      return './transportationEnergy.jpg';
+    case 'carbondioxideEmissions':
+      return './carbonDioxideEmissions.jpg';
+    case 'waterUsage':
+      return './waterUsage.png';
+    case 'wasteGeneration':
+      return './wasteGeneration.png';
+    default:
+      return './defaultKEI.jpg'; // Fallback image if kei doesn't match
+  }
+}
+
 // CSS for the custom KEI menu
 const style = document.createElement('style');
 style.innerHTML = `
@@ -353,6 +385,11 @@ style.innerHTML = `
   }
   .custom-kei-menu-item:hover {
     background: #f5f5f5;
+  }
+  .kei-image {
+    vertical-align: middle;
+    margin-right: 8px;
+    width: 20px;
   }
   .bpmn-icon-custom-kei {
     display: inline-block;

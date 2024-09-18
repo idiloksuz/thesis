@@ -17,7 +17,6 @@ const HIGH_PRIORITY = 1500,
     'nonRenewableEnergy': '#8b0000',
     'indoorEnergy': '#ff8c00',
     'transportationEnergy': '#4682b4',
-    '[singleSourceOfEnergy]': '#2e8b57',
     'carbondioxideEmissions': '#ffc800',
     'waterUsage': '#cc0000',
     'wasteGeneration': '#8a2be2',
@@ -135,9 +134,6 @@ export default class CustomRenderer extends BaseRenderer {
         unit = 'kWh';
         break;
       case 'transportationEnergy':
-        unit = 'kWh';
-        break;
-      case '[singleSourceOfEnergy]':
         unit = 'kWh';
         break;
       case 'carbonDioxideEmissions':
